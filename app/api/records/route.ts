@@ -1,0 +1,113 @@
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/src/lib/prisma";
+
+export async function GET(request: NextRequest) {
+  try {
+    const searchParams = request.nextUrl.searchParams;
+
+    // 3️⃣ Validación de parámetros
+    // project (obligatorio)
+    // URLSearchParams ya decodifica automáticamente, no necesitamos decodeURIComponent
+    const projectParam = searchParams.get("project");
+
+    // Si project no viene → no ejecutar consulta (error 400 o respuesta vacía)
+    if (!projectParam || !projectParam.trim()) {
+      return NextResponse.json(
+        { error: "El parámetro 'project' es obligatorio" },
+        { status: 400 }
+      );
+    }
+
+    const project = projectParam.trim();
+
+    // zone y category solo se aplican si vienen (verificar que no sean strings vacíos)
+    // URLSearchParams ya decodifica automáticamente
+    const zoneParam = searchParams.get("zone");
+    const categoryParam = searchParams.get("category");
+    
+    const zone = zoneParam && zoneParam.trim() ? zoneParam.trim() : null;
+    const category = categoryParam && categoryParam.trim() ? categoryParam.trim() : null;
+
+    // page y pageSize tienen valores por defecto seguros
+    const pageParam = searchParams.get("page");
+    const pageSizeParam = searchParams.get("pageSize");
+
+    // page >= 1
+    const page = pageParam ? Math.max(1, parseInt(pageParam, 10)) : 1;
+    
+    // pageSize dentro de límites (default 20, max 50)
+    const maxPageSize = 50;
+    const pageSize = pageSizeParam
+      ? Math.min(maxPageSize, Math.max(1, parseInt(pageSizeParam, 10)))
+      : 20; // Valor por defecto: 20
+    
+    const finalPageSize = Math.min(pageSize, maxPageSize);
+
+    // 4️⃣ Construcción del filtro
+    // Filtrar siempre por project
+    const where: any = {
+      proyecto: project,
+    };
+
+    // Agregar filtro por zone solo si se envía
+    if (zone) {
+      where.zona = zone;
+    }
+
+    // Agregar filtro por category solo si se envía
+    if (category) {
+      where.categoria = category;
+    }
+
+    // Debug: Log para verificar filtros (remover en producción)
+    console.log("Filtros aplicados:", JSON.stringify(where, null, 2));
+
+    // 5️⃣ Paginación
+    // Calcular offset (skip) según page y pageSize
+    const skip = (page - 1) * finalPageSize;
+
+    // Obtener totalItems para calcular totalPages
+    const totalItems = await prisma.housing_universe.count({ where });
+    const totalPages = Math.ceil(totalItems / finalPageSize);
+
+    // Limitar resultados con take
+    // Ordenar resultados de forma estable (por proyecto e id para consistencia)
+    const records = await prisma.housing_universe.findMany({
+      where,
+      select: {
+        // Performance: Seleccionar solo los campos necesarios
+        proyecto: true,
+        categoria: true,
+        zona: true,
+        // Agregar más campos según necesidad futura
+      },
+      skip,
+      take: finalPageSize,
+      orderBy: [
+        {
+          proyecto: "asc", // Orden estable por proyecto
+        },
+        {
+          id: "asc", // Segundo criterio para consistencia en paginación
+        },
+      ],
+    });
+
+    // 6️⃣ Respuesta estándar con metadata de paginación
+    return NextResponse.json({
+      items: records,
+      page,
+      pageSize: finalPageSize,
+      totalItems,
+      totalPages,
+    });
+  } catch (error) {
+    // Manejo de errores: Error controlado si falla la DB (500)
+    // No exponer stack trace, respuesta consistente
+    console.error("Error al obtener registros:", error);
+    return NextResponse.json(
+      { error: "Error al obtener registros" },
+      { status: 500 }
+    );
+  }
+}
