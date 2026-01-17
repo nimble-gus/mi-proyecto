@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     // - Si q tiene 1 letra (ej. "a") → buscar nombres que empiecen con esa letra
     // - Si q tiene más letras (ej. "al") → buscar nombres que empiecen con ese prefijo
     // Usamos startsWith para búsqueda por prefijo (case-sensitive en MySQL)
-    const projects = await prisma.housing_universe.findMany({
+    const allProjects = await prisma.housing_universe.findMany({
       where: {
         proyecto: {
           startsWith: normalizedQuery,
@@ -39,11 +39,22 @@ export async function GET(request: NextRequest) {
         zona: true,
         // Solo 3 campos: proyecto, categoria, zona
       },
-      take: 30, // Límite fijo de 30 resultados
+      take: 100, // Tomar más para poder filtrar duplicados
       orderBy: {
         proyecto: "asc", // Ordenar alfabéticamente por nombre
       },
     });
+
+    // Eliminar duplicados: si hay varios proyectos con el mismo nombre, mantener solo uno
+    const uniqueProjectsMap = new Map<string, typeof allProjects[0]>();
+    for (const project of allProjects) {
+      if (!uniqueProjectsMap.has(project.proyecto)) {
+        uniqueProjectsMap.set(project.proyecto, project);
+      }
+    }
+
+    // Convertir Map a array y limitar a 50 resultados
+    const projects = Array.from(uniqueProjectsMap.values()).slice(0, 50);
 
     // Estandarizar la respuesta: siempre { projects: [...] }
     return NextResponse.json({ projects });
