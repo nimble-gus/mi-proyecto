@@ -1,6 +1,6 @@
-# Mi Proyecto - Búsqueda de Proyectos
+# Mi Proyecto - Selector de Proyectos
 
-Aplicación fullstack desarrollada con Next.js y TypeScript que permite buscar proyectos por nombre.
+Aplicación fullstack desarrollada con Next.js y TypeScript que permite seleccionar proyectos mediante un componente autocomplete/selector que busca por letra o prefijo.
 
 ## 🛠️ Stack Tecnológico
 
@@ -40,21 +40,21 @@ mi-proyecto/
 
 ## 🎯 Funcionalidad Principal
 
-### Búsqueda de Proyectos por Nombre
+### Selector de Proyectos (Autocomplete)
 
-La aplicación permite buscar proyectos por nombre mediante una API REST que devuelve información filtrada.
+La aplicación implementa un componente selector/autocomplete que permite buscar y seleccionar proyectos por letra o prefijo mediante una API REST.
 
 #### Endpoint
 
-**GET** `/api/projects?q=nombre_proyecto`
+**GET** `/api/projects?q=prefijo`
 
 #### Parámetros de Consulta
 
-- `q` (string, opcional): Término de búsqueda para filtrar por nombre de proyecto
+- `q` (string, opcional): Término de búsqueda (letra o prefijo) para filtrar por nombre de proyecto
 
 #### Respuesta
 
-La API devuelve un array de proyectos que coinciden con la búsqueda. Cada proyecto contiene los siguientes campos desde la tabla `housing_universe`:
+La API devuelve un array de hasta 30 proyectos que coinciden con el prefijo. Cada proyecto contiene los siguientes campos desde la tabla `housing_universe`:
 
 ```json
 {
@@ -62,36 +62,39 @@ La API devuelve un array de proyectos que coinciden con la búsqueda. Cada proye
     {
       "proyecto": "Nombre del Proyecto",
       "categoria": "Categoría",
-      "zona": "Zona",
-      "estado": "Estado"
+      "zona": "Zona"
     }
   ]
 }
 ```
 
 **Características de la búsqueda:**
-- Búsqueda parcial (contiene) en el campo `proyecto`
-- Máximo 20 resultados
-- Ordenados alfabéticamente por nombre de proyecto
+- Búsqueda por prefijo (`startsWith`) en el campo `proyecto`
+- Si `q` tiene 1 letra (ej. "a") → busca nombres que empiecen con esa letra
+- Si `q` tiene más letras (ej. "al") → busca nombres que empiecen con ese prefijo
+- Máximo 30 resultados ordenados alfabéticamente
 - Si `q` está vacío o no se proporciona, retorna `{ projects: [] }`
+- Validación de longitud máxima (50 caracteres)
 
-#### Frontend
+#### Frontend - Selector/Autocomplete
 
-El componente `app/page.tsx` contiene la interfaz del buscador implementada con las siguientes características:
+El componente `app/page.tsx` contiene un selector de proyectos implementado con las siguientes características:
 
 **Funcionalidades:**
-- ✅ Input controlado con búsqueda en tiempo real
-- ✅ Debounce de 300ms para optimizar las peticiones
-- ✅ Estados de carga ("Buscando…")
+- ✅ Campo selector con dropdown que se abre al escribir
+- ✅ Búsqueda por letra o prefijo con debounce de 300ms
+- ✅ Muestra solo la primera palabra en la lista (o primera + segunda si hay duplicados)
+- ✅ Estados de carga ("Buscando…") y mensajes informativos
 - ✅ Manejo de errores con mensajes claros
-- ✅ Muestra resultados con los campos: `proyecto`, `categoria`, `zona`, `estado`
-- ✅ Mensaje cuando no hay resultados
-- ✅ Limpia resultados automáticamente cuando el input está vacío
+- ✅ Selección de proyecto que deshabilita el input y muestra el proyecto seleccionado
+- ✅ Botón "Limpiar" para resetear la selección
+- ✅ Cierra el dropdown al hacer click fuera
+- ✅ Mensajes de estado: "Escribe para buscar…", "No hay coincidencias"
 - ✅ Diseño responsive con Tailwind CSS
 - ✅ Soporte para modo oscuro
 
 **Tecnologías:**
-- React Hooks (`useState`, `useEffect`, `useCallback`)
+- React Hooks (`useState`, `useEffect`, `useCallback`, `useRef`)
 - TypeScript con tipos bien definidos
 - Fetch API para comunicación con el backend
 
@@ -193,27 +196,30 @@ El archivo `lib/prisma.ts` exporta una instancia singleton de PrismaClient para 
 El archivo `app/api/projects/route.ts` contiene la lógica del endpoint GET implementada:
 
 1. ✅ Lee el parámetro de consulta `q` desde la URL
-2. ✅ Valida y limpia el término de búsqueda (trim)
+2. ✅ Normaliza el input (trim) y valida longitud máxima (50 caracteres)
 3. ✅ Si `q` está vacío → retorna `{ projects: [] }`
-4. ✅ Busca en la tabla `housing_universe` por el campo `proyecto` usando búsqueda parcial (`contains`)
-5. ✅ Limita resultados a 20 y ordena por nombre ascendente
-6. ✅ Selecciona únicamente: `proyecto`, `categoria`, `zona`, `estado`
+4. ✅ Busca en la tabla `housing_universe` por el campo `proyecto` usando búsqueda por prefijo (`startsWith`)
+5. ✅ Limita resultados a 30 y ordena alfabéticamente por nombre
+6. ✅ Selecciona únicamente 3 campos: `proyecto`, `categoria`, `zona`
 7. ✅ Retorna formato JSON: `{ projects: [...] }`
-8. ✅ Manejo de errores con status 500 y mensaje simple
+8. ✅ Manejo de errores con status 500 y mensaje simple (sin exponer detalles sensibles)
 
-### Frontend del Buscador
+### Frontend - Selector/Autocomplete
 
-El archivo `app/page.tsx` contiene el componente del buscador implementado con:
+El archivo `app/page.tsx` contiene el componente selector implementado con:
 
-1. ✅ **Tipos TypeScript bien definidos**: Interface `Project` con los campos exactos del backend
-2. ✅ **Estados mínimos**: `query`, `projects`, `loading`, `error`
-3. ✅ **Input controlado**: `value` y `onChange` correctamente implementados
-4. ✅ **Llamada al backend**: Usa `fetch` con `encodeURIComponent` para la query
-5. ✅ **Comportamiento con input vacío**: Limpia resultados sin hacer requests innecesarios
+1. ✅ **Tipos TypeScript bien definidos**: Interface `Project` con solo 3 campos (`proyecto`, `categoria`, `zona`)
+2. ✅ **Estados del selector**: `query`, `options`, `isOpen`, `selected`, `loading`, `error`
+3. ✅ **Input controlado**: Campo selector que se deshabilita al seleccionar un proyecto
+4. ✅ **Llamada al backend**: Solo llama si `query` tiene 1+ letras, usa `fetch` con `encodeURIComponent`
+5. ✅ **Regla de búsqueda**: Si `query` vacío → `options = []` y no hace request
 6. ✅ **Debounce**: Espera 300ms antes de disparar la búsqueda
-7. ✅ **Render de estados**: Muestra loading, errores y "No hay resultados" correctamente
-8. ✅ **Render de resultados**: Muestra los 4 campos definidos con manejo de valores null
-9. ✅ **Buenas prácticas**: Sin credenciales, sin URLs absolutas, código limpio
+7. ✅ **Mostrar primera palabra**: Muestra la primera palabra en la lista, o primera + segunda si hay duplicados
+8. ✅ **Interacción**: Click en opción selecciona, cierra dropdown y limpia opciones
+9. ✅ **Botón limpiar**: Permite resetear la selección
+10. ✅ **Cerrar dropdown**: Se cierra al hacer click fuera (usando `useRef` y event listeners)
+11. ✅ **UX mejorada**: Mensajes de estado claros ("Escribe para buscar…", "Buscando…", "No hay coincidencias")
+12. ✅ **Buenas prácticas**: Sin credenciales, sin URLs absolutas, código limpio
 
 - `npm run dev` - Inicia el servidor de desarrollo
 - `npm run build` - Construye la aplicación para producción
@@ -231,9 +237,11 @@ El archivo `app/page.tsx` contiene el componente del buscador implementado con:
 5. ✅ Cliente de Prisma generado en `app/generated/prisma`
 6. ✅ `lib/prisma.ts` - Singleton de PrismaClient implementado
 7. ✅ `app/api/projects/route.ts` - Endpoint GET `/api/projects` implementado
-8. ✅ Búsqueda funcional en tabla `housing_universe` por campo `proyecto`
-9. ✅ Campos de respuesta definidos: `proyecto`, `categoria`, `zona`, `estado`
-10. ✅ `app/page.tsx` - Frontend completo con búsqueda en tiempo real
+8. ✅ Búsqueda funcional en tabla `housing_universe` por campo `proyecto` usando prefijo (`startsWith`)
+9. ✅ Campos de respuesta definidos: `proyecto`, `categoria`, `zona` (3 campos)
+10. ✅ `app/page.tsx` - Frontend completo con selector/autocomplete
+11. ✅ Búsqueda por prefijo implementada (1 letra o más)
+12. ✅ Límite de 30 resultados para optimizar rendimiento
 11. ✅ Debounce implementado (300ms)
 12. ✅ Manejo de estados (loading, error, resultados vacíos)
 13. ✅ Diseño responsive con Tailwind CSS
@@ -258,11 +266,13 @@ El proyecto está completamente funcional. Puedes:
 
 2. Abre [http://localhost:3000](http://localhost:3000) en tu navegador
 
-3. Escribe en el campo de búsqueda y observa:
-   - La búsqueda se ejecuta automáticamente después de 300ms
+3. Escribe en el selector y observa:
+   - El dropdown se abre automáticamente al escribir
+   - La búsqueda se ejecuta después de 300ms (debounce)
    - Muestra "Buscando…" mientras carga
-   - Muestra los resultados con los campos: proyecto, categoria, zona, estado
-   - Muestra "No hay resultados" si no encuentra coincidencias
+   - Muestra opciones con la primera palabra del nombre de proyecto
+   - Al seleccionar, muestra el proyecto completo arriba del selector
+   - Botón "Limpiar" para resetear la selección
 
 ### Probar el Endpoint Directamente
 
@@ -275,8 +285,11 @@ GET http://localhost:3000/api/projects
 # Query vacío (debe retornar { projects: [] })
 GET http://localhost:3000/api/projects?q=
 
-# Con término de búsqueda
-GET http://localhost:3000/api/projects?q=nombre_proyecto
+# Una letra (debe retornar hasta 30 resultados)
+GET http://localhost:3000/api/projects?q=a
+
+# Prefijo (debe retornar hasta 30 resultados más específicos)
+GET http://localhost:3000/api/projects?q=al
 ```
 
 ### Verificar en DBeaver
@@ -284,9 +297,181 @@ GET http://localhost:3000/api/projects?q=nombre_proyecto
 Puedes comparar los resultados con una consulta directa en DBeaver:
 
 ```sql
-SELECT proyecto, categoria, zona, estado 
+-- Búsqueda por prefijo (equivalente a startsWith)
+SELECT proyecto, categoria, zona 
 FROM housing_universe 
-WHERE proyecto LIKE '%nombre_proyecto%' 
+WHERE proyecto LIKE 'a%'  -- Reemplaza 'a' con tu prefijo
 ORDER BY proyecto ASC 
-LIMIT 20;
+LIMIT 30;
 ```
+
+## 🏗️ Arquitectura del Proyecto
+
+### Estructura de Carpetas
+
+```
+mi-proyecto/
+├── app/                                    # Directorio principal de Next.js App Router
+│   ├── api/                                # API Routes (Backend)
+│   │   └── projects/                       # Endpoint de proyectos
+│   │       └── route.ts                    # GET /api/projects - Búsqueda por prefijo
+│   │
+│   ├── generated/                          # Archivos generados (no modificar)
+│   │   └── prisma/                         # Cliente de Prisma generado
+│   │       ├── client.ts                   # PrismaClient export
+│   │       ├── browser.ts                  # Cliente para browser
+│   │       ├── enums.ts                    # Enumeraciones de Prisma
+│   │       ├── models/                     # Modelos TypeScript generados
+│   │       │   ├── housing_universe.ts     # Modelo housing_universe
+│   │       │   ├── Projects.ts             # Modelo Projects
+│   │       │   └── ... (36 modelos en total)
+│   │       ├── models.ts                   # Export de todos los modelos
+│   │       └── internal/                   # Archivos internos de Prisma
+│   │
+│   ├── page.tsx                            # Página principal (Selector/Autocomplete)
+│   ├── layout.tsx                          # Layout raíz de la aplicación
+│   ├── globals.css                         # Estilos globales con Tailwind CSS
+│   └── favicon.ico                         # Favicon de la aplicación
+│
+├── lib/                                    # Utilidades y helpers
+│   └── prisma.ts                           # Singleton de PrismaClient
+│
+├── prisma/                                 # Configuración de Prisma
+│   └── schema.prisma                       # Schema de Prisma (36 modelos importados)
+│
+├── public/                                 # Archivos estáticos
+│   ├── file.svg
+│   ├── globe.svg
+│   ├── next.svg
+│   ├── vercel.svg
+│   └── window.svg
+│
+├── .env                                    # Variables de entorno (DATABASE_URL)
+├── .gitignore                              # Archivos ignorados por Git
+├── eslint.config.mjs                       # Configuración de ESLint
+├── next.config.ts                          # Configuración de Next.js
+├── next-env.d.ts                           # Tipos de Next.js (generado)
+├── package.json                            # Dependencias y scripts del proyecto
+├── package-lock.json                       # Lock file de npm
+├── postcss.config.mjs                      # Configuración de PostCSS para Tailwind
+├── prisma.config.ts                        # Configuración de Prisma (opcional)
+├── README.md                               # Este archivo
+└── tsconfig.json                           # Configuración de TypeScript
+```
+
+### Flujo de Datos
+
+```
+┌─────────────────┐
+│   Usuario       │
+│   Escribe en    │
+│   selector      │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│  app/page.tsx   │ ◄─── Frontend: Componente Selector/Autocomplete
+│                 │      - Estados: query, options, isOpen, selected
+│  Debounce 300ms │      - Lógica de primera palabra
+│                 │      - Manejo de selección y limpieza
+└────────┬────────┘
+         │
+         │ fetch("/api/projects?q=...")
+         ▼
+┌─────────────────┐
+│ app/api/        │ ◄─── Backend: API Route Handler
+│ projects/       │      - GET /api/projects
+│ route.ts        │      - Normaliza query (trim)
+│                 │      - Validación de longitud
+└────────┬────────┘
+         │
+         │ prisma.housing_universe.findMany()
+         ▼
+┌─────────────────┐
+│  lib/prisma.ts  │ ◄─── Singleton de PrismaClient
+│                 │      - Evita múltiples conexiones
+└────────┬────────┘
+         │
+         │ Prisma ORM
+         ▼
+┌─────────────────┐
+│ app/generated/  │ ◄─── Cliente de Prisma generado
+│ prisma/         │      - Tipos TypeScript
+│                 │      - Modelos de base de datos
+└────────┬────────┘
+         │
+         │ MySQL Query (startsWith)
+         ▼
+┌─────────────────┐
+│   MySQL DB      │ ◄─── Base de datos
+│ housing_universe│      - Tabla: housing_universe
+│                 │      - Campos: proyecto, categoria, zona
+└─────────────────┘
+```
+
+### Componentes Principales
+
+#### 1. Frontend (`app/page.tsx`)
+- **Tipo**: Componente React Client Component
+- **Responsabilidad**: Interfaz del selector/autocomplete
+- **Estado**: 
+  - `query`: Texto ingresado por el usuario
+  - `options`: Array de proyectos del backend (máx 30)
+  - `isOpen`: Estado del dropdown
+  - `selected`: Proyecto seleccionado
+  - `loading`: Estado de carga
+  - `error`: Manejo de errores
+
+#### 2. Backend API (`app/api/projects/route.ts`)
+- **Tipo**: Next.js API Route Handler
+- **Método**: GET
+- **Responsabilidad**: 
+  - Recibir query param `q`
+  - Validar y normalizar input
+  - Consultar base de datos con Prisma
+  - Retornar hasta 30 resultados
+
+#### 3. Prisma Client (`lib/prisma.ts`)
+- **Tipo**: Singleton utility
+- **Responsabilidad**: 
+  - Instanciar PrismaClient una sola vez
+  - Reutilizar en desarrollo (hot-reload)
+  - Configurar logs según entorno
+
+#### 4. Schema de Prisma (`prisma/schema.prisma`)
+- **Tipo**: Definición de esquema
+- **Responsabilidad**: 
+  - Modelos de base de datos (36 modelos)
+  - Configuración de datasource (MySQL)
+  - Generator config (output personalizado)
+
+### Tecnologías y Herramientas
+
+| Capa | Tecnología | Versión | Propósito |
+|------|-----------|---------|-----------|
+| **Frontend** | Next.js | 16.1.2 | Framework React con App Router |
+| **Frontend** | React | 19.2.3 | Biblioteca UI |
+| **Frontend** | TypeScript | ^5 | Tipado estático |
+| **Frontend** | TailwindCSS | ^4 | Estilos utility-first |
+| **Backend** | Next.js API Routes | 16.1.2 | Endpoints REST |
+| **ORM** | Prisma | 6.19.2 | ORM TypeScript |
+| **Base de Datos** | MySQL | - | Base de datos relacional |
+| **Herramientas** | ESLint | ^9 | Linter de código |
+| **Config** | PostCSS | - | Procesamiento de CSS |
+
+### Patrones de Diseño
+
+1. **Singleton Pattern**: `lib/prisma.ts` - Una instancia única de PrismaClient
+2. **Client Component Pattern**: `app/page.tsx` - Componente con estado del lado del cliente
+3. **API Route Pattern**: `app/api/projects/route.ts` - Endpoints REST en Next.js
+4. **Debounce Pattern**: Búsqueda optimizada con delay de 300ms
+5. **Separation of Concerns**: Frontend, Backend y Base de Datos separados
+
+### Convenciones de Código
+
+- **Archivos TypeScript**: Extensión `.ts` para utilidades, `.tsx` para componentes React
+- **Rutas API**: Ubicadas en `app/api/[nombre]/route.ts`
+- **Componentes**: Client Components con `"use client"` directive
+- **Tipos**: Interfaces definidas en el mismo archivo o tipos inline
+- **Estilos**: Tailwind CSS con clases utility-first
+- **Naming**: camelCase para variables/funciones, PascalCase para componentes/tipos

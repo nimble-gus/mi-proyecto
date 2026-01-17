@@ -30,7 +30,7 @@ export default function Home() {
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Función para obtener la primera palabra y diferenciar duplicados
+  // Función para obtener el texto a mostrar en la lista (hasta 100 caracteres)
   const getDisplayText = useCallback((project: Project, allOptions: Project[]) => {
     const firstWord = project.proyecto.split(" ")[0];
     const duplicates = allOptions.filter(
@@ -38,12 +38,18 @@ export default function Home() {
     );
 
     if (duplicates.length > 1) {
-      // Si hay duplicados, mostrar primera + segunda palabra
+      // Si hay duplicados, mostrar más palabras para diferenciar
       const words = project.proyecto.split(" ");
-      return words.length > 1 ? `${words[0]} ${words[1]}` : firstWord;
+      const displayText = words.slice(0, Math.min(5, words.length)).join(" ");
+      // Limitar a 100 caracteres para la visualización
+      return displayText.length > 100 ? displayText.substring(0, 100) + "..." : displayText;
     }
 
-    return firstWord;
+    // Si no hay duplicados, mostrar más del nombre (hasta 100 caracteres)
+    const displayText = project.proyecto.length > 100 
+      ? project.proyecto.substring(0, 100) + "..." 
+      : project.proyecto;
+    return displayText;
   }, []);
 
   // Regla de llamadas al backend: Si query tiene 1+ letras → llamar /api/projects?q=query
@@ -167,6 +173,7 @@ export default function Home() {
                   selected ? selected.proyecto : "Escribe para buscar…"
                 }
                 disabled={!!selected}
+                maxLength={200}
                 className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-base text-black placeholder:text-zinc-500 focus:border-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:placeholder:text-zinc-500 dark:focus:border-zinc-500 dark:disabled:bg-zinc-800 dark:disabled:text-zinc-400"
                 aria-label="Seleccionar proyecto"
                 aria-expanded={isOpen}

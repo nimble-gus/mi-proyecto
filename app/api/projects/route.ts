@@ -15,8 +15,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ projects: [] });
     }
 
-    // Validar longitud máxima (50 caracteres)
-    if (normalizedQuery.length > 50) {
+    // Validar longitud máxima (200 caracteres)
+    if (normalizedQuery.length > 200) {
       return NextResponse.json(
         { error: "El término de búsqueda es demasiado largo" },
         { status: 400 }
