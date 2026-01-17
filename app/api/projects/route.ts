@@ -7,39 +7,49 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const query = searchParams.get("q");
 
-    // Limpiar espacios y validar
-    const searchTerm = query?.trim() || "";
+    // Normalizar el input: trim para quitar espacios
+    const normalizedQuery = query?.trim() || "";
 
-    // Si q viene vacío → responder { projects: [] }
-    if (!searchTerm) {
+    // Validar: si q viene vacío → devolver { projects: [] }
+    if (!normalizedQuery) {
       return NextResponse.json({ projects: [] });
     }
 
-    // Hacer la consulta con Prisma
-    // Filtrar por nombre usando "contiene" (búsqueda parcial)
-    // Limitar resultados (top 20) y ordenar por nombre
+    // Validar longitud máxima (50 caracteres)
+    if (normalizedQuery.length > 50) {
+      return NextResponse.json(
+        { error: "El término de búsqueda es demasiado largo" },
+        { status: 400 }
+      );
+    }
+
+    // Definir la regla de búsqueda:
+    // - Si q tiene 1 letra (ej. "a") → buscar nombres que empiecen con esa letra
+    // - Si q tiene más letras (ej. "al") → buscar nombres que empiecen con ese prefijo
+    // Usamos startsWith para búsqueda por prefijo (case-sensitive en MySQL)
     const projects = await prisma.housing_universe.findMany({
       where: {
         proyecto: {
-          contains: searchTerm,
+          startsWith: normalizedQuery,
         },
       },
       select: {
         proyecto: true,
         categoria: true,
         zona: true,
-        estado: true,
+        // Solo 3 campos: proyecto, categoria, zona
       },
-      take: 20, // Limitar a 20 resultados
+      take: 30, // Límite fijo de 30 resultados
       orderBy: {
-        proyecto: "asc", // Ordenar por nombre ascendente
+        proyecto: "asc", // Ordenar alfabéticamente por nombre
       },
     });
 
-    // Formatear la respuesta
+    // Estandarizar la respuesta: siempre { projects: [...] }
     return NextResponse.json({ projects });
   } catch (error) {
-    // Manejo de errores: status 500 + mensaje simple
+    // Manejo de errores básico: status 500 + mensaje simple
+    // No exponer stack traces ni detalles sensibles
     console.error("Error en búsqueda de proyectos:", error);
     return NextResponse.json(
       { error: "Error al buscar proyectos" },

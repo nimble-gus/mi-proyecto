@@ -1,38 +1,63 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
-// 2️⃣ Tipos bien definidos (TypeScript)
+// Tipos bien definidos (TypeScript)
 interface Project {
   proyecto: string;
   categoria: string;
   zona: string | null;
-  estado: string | null;
 }
 
 interface ApiResponse {
   projects: Project[];
 }
 
+interface SelectedProject {
+  proyecto: string;
+  categoria: string;
+  zona: string | null;
+}
+
 export default function Home() {
-  // 3️⃣ Estados mínimos y correctos
+  // Estados nuevos
   const [query, setQuery] = useState<string>("");
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [options, setOptions] = useState<Project[]>([]);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [selected, setSelected] = useState<SelectedProject | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 7️⃣ Debounce implementado
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Función para obtener la primera palabra y diferenciar duplicados
+  const getDisplayText = useCallback((project: Project, allOptions: Project[]) => {
+    const firstWord = project.proyecto.split(" ")[0];
+    const duplicates = allOptions.filter(
+      (p) => p.proyecto.split(" ")[0] === firstWord
+    );
+
+    if (duplicates.length > 1) {
+      // Si hay duplicados, mostrar primera + segunda palabra
+      const words = project.proyecto.split(" ");
+      return words.length > 1 ? `${words[0]} ${words[1]}` : firstWord;
+    }
+
+    return firstWord;
+  }, []);
+
+  // Regla de llamadas al backend: Si query tiene 1+ letras → llamar /api/projects?q=query
+  // Aplicar debounce (300ms)
   useEffect(() => {
-    // Si query está vacío → limpia resultados (6️⃣)
+    // Si query está vacío → options = [] y no llamar
     if (!query.trim()) {
-      setProjects([]);
+      setOptions([]);
       setError(null);
       return;
     }
 
     // Limpia el timeout anterior
     const timeoutId = setTimeout(() => {
-      // 5️⃣ Llamada al backend correcta
       const searchProjects = async () => {
         setLoading(true);
         setError(null);
@@ -46,117 +71,192 @@ export default function Home() {
           }
 
           const data: ApiResponse = await response.json();
-          setProjects(data.projects || []);
+          setOptions(data.projects || []);
         } catch (err) {
           setError("Error al buscar proyectos. Por favor, intenta nuevamente.");
-          setProjects([]);
+          setOptions([]);
         } finally {
           setLoading(false);
         }
       };
 
       searchProjects();
-    }, 300); // Espera 300ms antes de disparar la búsqueda
+    }, 300); // Debounce de 300ms
 
-    // Limpia el timeout si el componente se desmonta o query cambia
     return () => clearTimeout(timeoutId);
   }, [query]);
 
-  // 4️⃣ Input bien controlado
+  // Cerrar dropdown al hacer click afuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Interacción: Click en una opción
+  const handleSelectOption = useCallback((project: Project) => {
+    setSelected(project);
+    setIsOpen(false);
+    setOptions([]);
+    setQuery("");
+  }, []);
+
+  // Botón para limpiar selección
+  const handleClearSelection = useCallback(() => {
+    setSelected(null);
+    setQuery("");
+    setOptions([]);
+    setIsOpen(false);
+  }, []);
+
+  // Input bien controlado
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setQuery(e.target.value);
+      setIsOpen(true);
     },
     []
   );
 
+  const handleInputFocus = useCallback(() => {
+    if (query.trim()) {
+      setIsOpen(true);
+    }
+  }, [query]);
+
   return (
     <div className="flex min-h-screen items-start justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex w-full max-w-4xl flex-col gap-8 py-16 px-4 sm:px-8">
+      <main className="flex w-full max-w-2xl flex-col gap-8 py-16 px-4 sm:px-8">
         <div className="flex flex-col gap-2">
           <h1 className="text-3xl font-semibold text-black dark:text-zinc-50">
-            Búsqueda de Proyectos
+            Seleccionar Proyecto
           </h1>
           <p className="text-zinc-600 dark:text-zinc-400">
-            Busca proyectos por nombre en la base de datos
+            Selecciona un proyecto escribiendo una letra o prefijo
           </p>
         </div>
 
-        {/* 4️⃣ Input bien controlado */}
-        <div className="flex flex-col gap-2">
-          <input
-            type="text"
-            value={query}
-            onChange={handleInputChange}
-            placeholder="Buscar proyecto…"
-            className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-base text-black placeholder:text-zinc-500 focus:border-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:placeholder:text-zinc-500 dark:focus:border-zinc-500"
-            aria-label="Buscar proyecto"
-          />
+        {/* Selector de proyecto */}
+        <div className="flex flex-col gap-2" ref={dropdownRef}>
+          <label
+            htmlFor="project-selector"
+            className="text-sm font-medium text-black dark:text-zinc-50"
+          >
+            Proyecto
+          </label>
+
+          <div className="relative">
+            <div className="flex items-center gap-2">
+              <input
+                id="project-selector"
+                type="text"
+                value={selected ? selected.proyecto : query}
+                onChange={handleInputChange}
+                onFocus={handleInputFocus}
+                placeholder={
+                  selected ? selected.proyecto : "Escribe para buscar…"
+                }
+                disabled={!!selected}
+                className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-base text-black placeholder:text-zinc-500 focus:border-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:placeholder:text-zinc-500 dark:focus:border-zinc-500 dark:disabled:bg-zinc-800 dark:disabled:text-zinc-400"
+                aria-label="Seleccionar proyecto"
+                aria-expanded={isOpen}
+                aria-haspopup="listbox"
+              />
+
+              {selected && (
+                <button
+                  type="button"
+                  onClick={handleClearSelection}
+                  className="rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                  aria-label="Limpiar selección"
+                >
+                  Limpiar
+                </button>
+              )}
+            </div>
+
+            {/* Dropdown panel */}
+            {isOpen && !selected && (
+              <div className="absolute z-10 mt-2 w-full rounded-lg border border-zinc-200 bg-white shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
+                {/* Mostrar "Escribe para buscar…" cuando está abierto y vacío */}
+                {!query.trim() && !loading && (
+                  <div className="px-4 py-3 text-center text-sm text-zinc-500 dark:text-zinc-400">
+                    Escribe para buscar…
+                  </div>
+                )}
+
+                {/* Mostrar "Buscando…" cuando loading */}
+                {loading && (
+                  <div className="px-4 py-3 text-center text-sm text-zinc-600 dark:text-zinc-400">
+                    Buscando…
+                  </div>
+                )}
+
+                {/* Mostrar error si existe */}
+                {error && !loading && (
+                  <div className="px-4 py-3 text-center text-sm text-red-600 dark:text-red-400">
+                    {error}
+                  </div>
+                )}
+
+                {/* Mostrar "No hay coincidencias" si options viene vacío con query lleno */}
+                {!loading &&
+                  !error &&
+                  query.trim() &&
+                  options.length === 0 && (
+                    <div className="px-4 py-3 text-center text-sm text-zinc-600 dark:text-zinc-400">
+                      No hay coincidencias
+                    </div>
+                  )}
+
+                {/* Lista de opciones */}
+                {!loading && !error && options.length > 0 && (
+                  <ul
+                    role="listbox"
+                    className="max-h-60 overflow-y-auto py-1"
+                  >
+                    {options.map((project, index) => {
+                      const displayText = getDisplayText(project, options);
+                      return (
+                        <li
+                          key={`${project.proyecto}-${index}`}
+                          role="option"
+                          onClick={() => handleSelectOption(project)}
+                          className="cursor-pointer px-4 py-2 text-sm text-black transition-colors hover:bg-zinc-100 dark:text-zinc-50 dark:hover:bg-zinc-800"
+                          aria-selected={false}
+                        >
+                          {displayText}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* 8️⃣ Render de estados (UX) */}
-        {loading && (
-          <div className="text-center text-zinc-600 dark:text-zinc-400">
-            Buscando…
+        {/* Mostrar el proyecto seleccionado arriba o dentro del input (ya está en el input disabled) */}
+        {selected && (
+          <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800">
+            <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              Proyecto seleccionado:
+            </p>
+            <p className="mt-1 text-base font-semibold text-black dark:text-zinc-50">
+              {selected.proyecto}
+            </p>
           </div>
         )}
-
-        {error && !loading && (
-          <div className="rounded-lg bg-red-50 p-4 text-red-700 dark:bg-red-900/20 dark:text-red-400">
-            {error}
-          </div>
-        )}
-
-        {/* 9️⃣ Render de resultados */}
-        {!loading && !error && query.trim() && projects.length > 0 && (
-          <div className="flex flex-col gap-4">
-            <h2 className="text-lg font-medium text-black dark:text-zinc-50">
-              Resultados ({projects.length})
-            </h2>
-            <div className="flex flex-col gap-3">
-              {projects.map((project, index) => (
-                <div
-                  key={`${project.proyecto}-${index}`}
-                  className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
-                >
-                  <div className="flex flex-col gap-2">
-                    <h3 className="text-lg font-semibold text-black dark:text-zinc-50">
-                      {project.proyecto}
-                    </h3>
-                    <div className="flex flex-wrap gap-4 text-sm text-zinc-600 dark:text-zinc-400">
-                      <div>
-                        <span className="font-medium">Categoría:</span>{" "}
-                        {project.categoria}
-                      </div>
-                      {project.zona && (
-                        <div>
-                          <span className="font-medium">Zona:</span>{" "}
-                          {project.zona}
-                        </div>
-                      )}
-                      {project.estado && (
-                        <div>
-                          <span className="font-medium">Estado:</span>{" "}
-                          {project.estado}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* 8️⃣ Muestra "No hay resultados" solo cuando hay texto, no está cargando, y el array viene vacío */}
-        {!loading &&
-          !error &&
-          query.trim() &&
-          projects.length === 0 && (
-            <div className="text-center text-zinc-600 dark:text-zinc-400">
-              No hay resultados para &quot;{query}&quot;
-            </div>
-          )}
       </main>
     </div>
   );
