@@ -1,14 +1,952 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client"
   output   = "../app/generated/prisma"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Applications {
+  applications_id   Int                @id @default(autoincrement())
+  applications_name String?            @db.VarChar(20)
+  params            Json
+  is_active         Int                @default(1) @db.TinyInt
+  created_at        DateTime           @default(now()) @db.Timestamp(0)
+  updated_at        DateTime           @default(now()) @db.Timestamp(0)
+  Projects          Projects[]
+  ProjectsVersions  ProjectsVersions[]
+
+  @@index([applications_name], map: "idx_applications_name")
+}
+
+model Categoria {
+  id           Int            @id @default(autoincrement())
+  categoria    String         @db.VarChar(100)
+  SubCategoria SubCategoria[]
+}
+
+model Categories {
+  category_id   Int             @id @default(autoincrement())
+  category_name String          @db.VarChar(100)
+  params        Json?
+  is_active     Int             @default(1) @db.TinyInt
+  created_at    DateTime        @default(now()) @db.Timestamp(0)
+  updated_at    DateTime        @default(now()) @db.Timestamp(0)
+  Subcategories Subcategories[]
+}
+
+model Comment {
+  CommentId  String   @id @db.VarChar(100)
+  Comment    String   @db.VarChar(1000)
+  ResponseId String   @db.VarChar(100)
+  UserId     String   @db.VarChar(100)
+  UserName   String   @db.VarChar(100)
+  Status     Int      @db.TinyInt
+  CreatedAt  DateTime @db.DateTime(0)
+  UpdatedAt  DateTime @db.DateTime(0)
+  Response   Response @relation(fields: [ResponseId], references: [ResponseId], onDelete: NoAction, onUpdate: NoAction, map: "Comment_Response")
+
+  @@index([ResponseId], map: "Comment_Response")
+}
+
+model Configs {
+  config_id  Int      @id @default(autoincrement())
+  params     Json
+  is_active  Int      @default(1) @db.TinyInt
+  created_at DateTime @default(now()) @db.Timestamp(0)
+  updated_at DateTime @default(now()) @db.Timestamp(0)
+}
+
+model Departamento {
+  id           Int         @id @default(autoincrement())
+  departamento String      @db.VarChar(100)
+  Municipio    Municipio[]
+}
+
+model Departments {
+  department_id   Int              @id @default(autoincrement())
+  department_name String           @db.VarChar(100)
+  is_active       Int              @default(1) @db.TinyInt
+  created_at      DateTime         @default(now()) @db.Timestamp(0)
+  updated_at      DateTime         @default(now()) @db.Timestamp(0)
+  Municipalities  Municipalities[]
+
+  @@index([department_name], map: "idx_departments_name")
+}
+
+model IssIndicadoresMacroeconomicos {
+  iss_absorcionhorizontal                       Decimal?  @db.Decimal(18, 2)
+  iss_absorcionindustrial                       Decimal?  @db.Decimal(18, 2)
+  iss_absorcionoficinas                         Decimal?  @db.Decimal(18, 2)
+  iss_absorcionvertical                         Decimal?  @db.Decimal(18, 2)
+  iss_ActividadesInmobiliariasEmpresarialyAlqui Decimal?  @db.Decimal(18, 2)
+  iss_actividadservcomunitariosocialprofesional Decimal?  @db.Decimal(18, 2)
+  iss_administracionpublicaydefensaseguridadsoc Decimal?  @db.Decimal(18, 2)
+  iss_agriculturaganaderiacazaysilvicultura     Decimal?  @db.Decimal(18, 2)
+  iss_a_o                                       String?   @map("iss_año") @db.Text
+  iss_bancochn                                  Decimal?  @db.Decimal(18, 2)
+  iss_bancodeamericacentral                     Decimal?  @db.Decimal(18, 2)
+  iss_bancodeantigua                            Decimal?  @db.Decimal(18, 2)
+  iss_bancodelagro                              Decimal?  @db.Decimal(18, 2)
+  iss_bancoindustrial                           Decimal?  @db.Decimal(18, 2)
+  iss_bancoinmobiliario                         Decimal?  @db.Decimal(18, 2)
+  iss_bancointernacional                        Decimal?  @db.Decimal(18, 2)
+  iss_banrural                                  Decimal?  @db.Decimal(18, 2)
+  iss_bantrab                                   Decimal?  @db.Decimal(18, 2)
+  iss_comercioalpormayorymenor                  Decimal?  @db.Decimal(18, 2)
+  iss_consideralaeconomiadelpaismejorno         Decimal?  @db.Decimal(18, 2)
+  iss_consideralaeconomiadelpaismejorsi         Decimal?  @db.Decimal(18, 2)
+  iss_construccion                              Decimal?  @db.Decimal(18, 2)
+  iss_Indicadoresguid                           String    @id @db.VarChar(36)
+  iss_construccionmorosidaden                   Decimal?  @db.Decimal(19, 4)
+  iss_construccionmorosidadenq                  Decimal?  @db.Decimal(19, 4)
+  iss_construccionsaldosen                      Decimal?  @db.Decimal(19, 4)
+  iss_construccionsaldosenq                     Decimal?  @db.Decimal(19, 4)
+  iss_construcciontasadeinteresen               Decimal?  @db.Decimal(19, 4)
+  iss_construcciontasadeinteresenq              Decimal?  @db.Decimal(19, 4)
+  iss_coyunturaactualparainversionesmalmomento  Float?    @db.Float
+  iss_coyunturaactualpararealizarinverionessi   Float?    @db.Float
+  iss_coyunturaactualpararealizarinversionesno  Float?    @db.Float
+  iss_desocupacionhorizontal                    Float?    @db.Float
+  iss_desocupacionindustrial                    Float?    @db.Float
+  iss_desocupacionoficinas                      Float?    @db.Float
+  iss_desocupacionvertical                      Float?    @db.Float
+  iss_diferenciamensualdeanoactualvrsanoanterio Float?    @db.Float
+  iss_empleadosdedependenciaestudiantesyjubilad Float?    @db.Float
+  iss_ensenanza                                 Float?    @db.Float
+  statecode                                     String?   @db.VarChar(20)
+  iss_evolucionclimadenegociosempeorara         Float?    @db.Float
+  iss_evolucionclimadenegociospermaneceigual    Float?    @db.Float
+  iss_evoluciondelclimadelosnegociosmejorara    Float?    @db.Float
+  iss_expectativasdeinflacion                   Float?    @db.Float
+  iss_explotaciondeminasycanteras               Float?    @db.Float
+  iss_ficohsa                                   Float?    @db.Float
+  iss_gtcontinental                             Float?    @db.Float
+  iss_hipotecarioparaviviendamorosidaden        Decimal?  @db.Decimal(19, 4)
+  iss_hipotecarioparaviviendamorosidadenq       Decimal?  @db.Decimal(19, 4)
+  iss_hipotecarioparaviviendasaldosen           Decimal?  @db.Decimal(19, 4)
+  iss_hipotecarioparaviviendasaldosenq          Decimal?  @db.Decimal(19, 4)
+  iss_hipotecarioparaviviendatasadeintere       Decimal?  @db.Decimal(19, 4)
+  iss_hipotecarioparaviviendatasadeinteres      Decimal?  @db.Decimal(19, 4)
+  iss_horizontalacabados                        Float?    @db.Float
+  iss_horizontalenconstruccion                  Float?    @db.Float
+  iss_horizontalenplanos                        Float?    @db.Float
+  iss_horizontalentregadosenventa               Float?    @db.Float
+  iss_horizontalmovimientodetierras             Float?    @db.Float
+  iss_horizontalobragris                        Float?    @db.Float
+  iss_hotelesyrestaurantes                      Float?    @db.Float
+  iss_imaeoriginal                              Float?    @db.Float
+  iss_imaetendenciadelciclo                     Float?    @db.Float
+  iss_industrialacabados                        Float?    @db.Float
+  iss_industrialenconstruccion                  Float?    @db.Float
+  iss_industriaenplanos                         Float?    @db.Float
+  iss_industrialentregadosenventa               Float?    @db.Float
+  iss_industrialmovimientodetierras             Float?    @db.Float
+  iss_industrialobragris                        Float?    @db.Float
+  iss_industrias                                Float?    @db.Float
+  iss_ingresoporcapitalanual                    Decimal?  @db.Decimal(19, 4)
+  iss_ingresoporcapitalmensual                  Decimal?  @db.Decimal(19, 4)
+  iss_intermediacionfinanciera                  Float?    @db.Float
+  iss_invsa                                     Float?    @db.Float
+  iss_mejoraralaeconomiadelpaisen6mesesno       Float?    @db.Float
+  iss_mejoraralaeconomiadelpaisen6mesessi       Float?    @db.Float
+  iss_mes                                       DateTime? @db.Date
+  iss_meses                                     String?   @db.VarChar(30)
+  iss_oficinasacabados                          Float?    @db.Float
+  iss_oficinasenconstruccion                    Float?    @db.Float
+  iss_oficinasenplanos                          Float?    @db.Float
+  iss_oficinasentregadosenventa                 Float?    @db.Float
+  iss_oficinasmovimientodetierras               Float?    @db.Float
+  iss_oficinasobragris                          Float?    @db.Float
+  iss_organizacionesyorganosextraterritoriales  Float?    @db.Float
+  iss_otrasactividades                          Float?    @db.Float
+  iss_pibanualen                                Decimal?  @db.Decimal(19, 4)
+  iss_pibanualenq                               Decimal?  @db.Decimal(19, 4)
+  iss_poblacion                                 Float?    @db.Float
+  iss_produccionhorizontal                      Float?    @db.Float
+  iss_produccionindustrial                      Float?    @db.Float
+  iss_produccionoficinas                        Float?    @db.Float
+  iss_produccionvertical                        Float?    @db.Float
+  iss_promerica                                 Float?    @db.Float
+  iss_remesasen                                 Decimal?  @db.Decimal(19, 4)
+  iss_remesasenq                                Decimal?  @db.Decimal(19, 4)
+  iss_serviciossocialesydesalud                 Float?    @db.Float
+  iss_suministrodeelectricidadgasyagua          Float?    @db.Float
+  iss_tasadecreditoshipotecarios                Float?    @db.Float
+  iss_transportealmacenamientoycomunicaciones   Float?    @db.Float
+  iss_trimestre                                 String?   @db.VarChar(20)
+  iss_variacionporcentualipc                    Float?    @db.Float
+  iss_variacionporcentualpib                    Float?    @db.Float
+  iss_verticalacabados                          Float?    @db.Float
+  iss_verticalenconstruccion                    Float?    @db.Float
+  iss_verticalenplanos                          Float?    @db.Float
+  iss_verticalentregadosenventa                 Float?    @db.Float
+  iss_verticalmovimientodetierras               Float?    @db.Float
+  iss_verticalobragris                          Float?    @db.Float
+  iss_vivibanco                                 Float?    @db.Float
+}
+
+model IssRecoleccionProyectos {
+  iss_ProyectoPeriodGuid                     String    @id @db.VarChar(36)
+  iss_ApartamentooCasaModelo                 String    @db.VarChar(5)
+  iss_CantidaddeNiveles                      Float?    @db.Float
+  iss_CantidaddeParqueosdeUnidades2          Float?    @db.Float
+  iss_CantidaddeUnidades2                    Float?    @db.Float
+  iss_CantidadTotaldeParqueos                Float?    @db.Float
+  iss_EngancheFraccionado                    String?   @db.VarChar(5)
+  iss_FechadeEntrega                         DateTime? @db.Date
+  iss_FechadeIniciodelProyecto               DateTime? @db.Date
+  iss_FechadeRecoleccin                      DateTime  @db.Date
+  iss_M2Totales2                             Float?    @db.Float
+  iss_ModalidadFHA                           String?   @db.VarChar(10)
+  iss_NombredelProyecto                      String?   @db.VarChar(100)
+  iss_Periodo                                String?   @db.VarChar(50)
+  iss_ProyectoGuid                           String    @db.VarChar(36)
+  iss_parqueodisponibleparaventadecondomenes Float?    @db.Float
+  iss_parqueoexclusivodevisitas              Float?    @db.Float
+  iss_parqueopararentadecodomenes            Float?    @db.Float
+  iss_plazodeenganchefraccionado             Float?    @db.Float
+  statuscode                                 String?   @db.VarChar(30)
+  iss_revitalizado                           String?   @db.VarChar(5)
+  iss_showroom                               String?   @db.VarChar(5)
+  iss_tipodemarketscan                       String?   @db.VarChar(30)
+  iss_torreofase                             String?   @db.VarChar(100)
+  iss_uso                                    String?   @db.VarChar(30)
+  iss_clasificacionporzona                   String?   @db.VarChar(10)
+  iss_pais                                   String?   @db.VarChar(20)
+  iss_barrio                                 String?   @db.VarChar(100)
+  iss_barriocr                               String?   @db.VarChar(100)
+  iss_cantidaddeviviendas                    Float?    @db.Float
+  iss_canton                                 String?   @db.VarChar(100)
+  iss_cantoncr                               String?   @db.VarChar(100)
+  iss_categoria                              String?   @db.VarChar(100)
+  iss_categoriaoriginal                      String?   @db.VarChar(100)
+  iss_colonia                                String?   @db.VarChar(100)
+  iss_departamento                           String?   @db.VarChar(100)
+  iss_distrito                               String?   @db.VarChar(100)
+  iss_latitud                                String?   @db.VarChar(100)
+  iss_longitud                               String?   @db.VarChar(100)
+  iss_mercadoprimario                        String?   @db.VarChar(10)
+  iss_mercadosecundario                      String?   @db.VarChar(10)
+  iss_municipio                              String?   @db.VarChar(100)
+  iss_parqueopararentadecondomenes           Float?    @db.Float
+  iss_provinciacr                            String?   @db.VarChar(100)
+  iss_subcategoria                           String?   @db.VarChar(100)
+  iss_subzona                                String?   @db.VarChar(100)
+  iss_tipoderevitalizado                     String?   @db.VarChar(100)
+  iss_totaldeparqueos                        Float?    @db.Float
+  iss_vendido                                String?   @db.VarChar(10)
+  iss_mercadosecundarioincompleto            String?   @db.VarChar(10)
+  iss_parqueoparacontenedores                String?   @db.VarChar(10)
+  iss_cantidaddeparqueosparacontenedores     Float?    @db.Float
+  iss_absorcionunitaria                      Float?    @db.Float
+  iss_absorcionporm2                         Float?    @db.Float
+  iss_zona                                   String?   @db.VarChar(150)
+  iss_CantidaddeParqueosdeUnidadesSecundario Float?    @db.Float
+  iss_m2totalessecundario                    Float?    @db.Float
+  iss_desarrollador                          String?   @db.VarChar(100)
+  iss_ConstructoraMovimientoDeTierras        String?   @db.VarChar(100)
+  iss_ConstructoraObraGris                   String?   @db.VarChar(100)
+  iss_ConstructoraAcabados                   String?   @db.VarChar(100)
+  iss_Constructora4                          String?   @db.VarChar(100)
+  iss_Constructora5                          String?   @db.VarChar(100)
+}
+
+model Municipalities {
+  municipality_id   Int         @id @default(autoincrement())
+  municipality_name String      @db.VarChar(50)
+  department_id     Int
+  is_active         Int         @default(1) @db.TinyInt
+  created_at        DateTime    @default(now()) @db.Timestamp(0)
+  updated_at        DateTime    @default(now()) @db.Timestamp(0)
+  Departments       Departments @relation(fields: [department_id], references: [department_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_department_id")
+  Zones             Zones[]
+
+  @@index([department_id], map: "FK_department_id")
+  @@index([municipality_name], map: "idx_municipalities_name")
+}
+
+model Municipio {
+  id              Int          @id @default(autoincrement())
+  municipio       String       @db.VarChar(50)
+  Departamento_id Int
+  Departamento    Departamento @relation(fields: [Departamento_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Municipio_Departamento")
+  Zona            Zona[]
+
+  @@index([Departamento_id], map: "Municipio_Departamento")
+}
+
+model Projects {
+  project_id               Int                @id @default(autoincrement())
+  project_name             String             @unique(map: "project_name") @db.VarChar(500)
+  project_uuid             String             @unique(map: "project_uuid") @db.VarChar(255)
+  project_sold_out         Int                @default(0) @db.TinyInt
+  project_primary_market   Int                @default(1) @db.TinyInt
+  project_longitude        String             @db.VarChar(100)
+  project_latitude         String             @db.VarChar(100)
+  project_last_recolection DateTime           @db.Date
+  status_id                Int
+  subcategory_id           Int
+  applications_id          Int
+  zone_id                  Int
+  is_active                Int                @default(1) @db.TinyInt
+  created_at               DateTime           @default(now()) @db.Timestamp(0)
+  updated_at               DateTime           @default(now()) @db.Timestamp(0)
+  Applications             Applications       @relation(fields: [applications_id], references: [applications_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_applications_id")
+  Statuses                 Statuses           @relation(fields: [status_id], references: [status_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_status_id")
+  Subcategories            Subcategories      @relation(fields: [subcategory_id], references: [subcategory_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_subcategory_id")
+  Zones                    Zones              @relation(fields: [zone_id], references: [zone_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_zone_id")
+  ProjectsVersions         ProjectsVersions[]
+  Units                    Units[]
+  UnitsVersions            UnitsVersions[]
+
+  @@index([applications_id], map: "FK_applications_id")
+  @@index([status_id], map: "FK_status_id")
+  @@index([subcategory_id], map: "FK_subcategory_id")
+  @@index([zone_id], map: "FK_zone_id")
+  @@index([project_name], map: "idx_projects_name")
+  @@index([project_uuid], map: "idx_projects_uuid")
+}
+
+model ProjectsVersions {
+  project_version_uuid   String          @id @db.VarChar(200)
+  project_id             Int
+  project_name           String          @db.VarChar(500)
+  project_uuid           String          @db.VarChar(255)
+  project_sold_out       Int             @default(0) @db.TinyInt
+  project_primary_market Int             @default(1) @db.TinyInt
+  status_id              Int
+  subcategory_id         Int
+  applications_id        Int
+  zone_id                Int
+  is_active              Int             @default(1) @db.TinyInt
+  last_recolection_date  DateTime        @db.Date
+  created_at             DateTime        @default(now()) @db.Timestamp(0)
+  updated_at             DateTime        @default(now()) @db.Timestamp(0)
+  Applications           Applications    @relation(fields: [applications_id], references: [applications_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_projectsversion_applications_id")
+  Projects               Projects        @relation(fields: [project_id], references: [project_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_projectsversion_project_id")
+  Statuses               Statuses        @relation(fields: [status_id], references: [status_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_projectsversion_status_id")
+  Subcategories          Subcategories   @relation(fields: [subcategory_id], references: [subcategory_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_projectsversion_subcategory_id")
+  Zones                  Zones           @relation(fields: [zone_id], references: [zone_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_projectsversion_zone_id")
+  UnitsVersions          UnitsVersions[]
+
+  @@index([applications_id], map: "FK_applications_id")
+  @@index([project_id], map: "FK_projectsversion_project_id")
+  @@index([status_id], map: "FK_status_id")
+  @@index([subcategory_id], map: "FK_subcategory_id")
+  @@index([zone_id], map: "FK_zone_id")
+}
+
+model ProyectStatus {
+  id       Int        @id @default(autoincrement())
+  name     String     @db.VarChar(255)
+  Proyecto Proyecto[]
+}
+
+model Proyecto {
+  Id                  Int           @id @default(autoincrement())
+  Name                String        @db.VarChar(500)
+  Uuid                String        @db.VarChar(255)
+  Vendido             Int           @db.TinyInt
+  MercadoPrimario     Int           @db.TinyInt
+  SubCategoriaId      Int
+  UsoId               Int
+  StatusId            Int
+  ZonaId              Int
+  LastRecolectionDate DateTime      @db.Date
+  Country             String        @default("Guatemala") @db.VarChar(24)
+  ProyectStatus       ProyectStatus @relation(fields: [StatusId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Proyecto_Status")
+  SubCategoria        SubCategoria  @relation(fields: [SubCategoriaId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Proyecto_SubCategoria")
+  Uso                 Uso           @relation(fields: [UsoId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Proyecto_Uso")
+  Zona                Zona          @relation(fields: [ZonaId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Proyecto_Zona")
+  Unidades            Unidades[]
+
+  @@index([StatusId], map: "FK_Proyecto_Status")
+  @@index([SubCategoriaId], map: "FK_Proyecto_SubCategoria")
+  @@index([UsoId], map: "FK_Proyecto_Uso")
+  @@index([ZonaId], map: "FK_Proyecto_Zona")
+}
+
+model Response {
+  ResponseId  String    @id @db.VarChar(100)
+  Status      Int       @db.TinyInt
+  Environment String    @db.VarChar(11)
+  CreatedAt   DateTime  @db.DateTime(0)
+  UpdatedAt   DateTime  @db.DateTime(0)
+  Comment     Comment[]
+}
+
+model Statuses {
+  status_id        Int                @id @default(autoincrement())
+  status_name      String?            @db.VarChar(255)
+  is_active        Int                @default(1) @db.TinyInt
+  created_at       DateTime           @default(now()) @db.Timestamp(0)
+  updated_at       DateTime           @default(now()) @db.Timestamp(0)
+  Projects         Projects[]
+  ProjectsVersions ProjectsVersions[]
+
+  @@index([status_name], map: "idx_statuses_name")
+}
+
+model SubCategoria {
+  id           Int        @id @default(autoincrement())
+  subcategoria String     @db.VarChar(100)
+  Categoria_id Int
+  Proyecto     Proyecto[]
+  Categoria    Categoria  @relation(fields: [Categoria_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "SubCategoria_Categoria")
+
+  @@index([Categoria_id], map: "SubCategoria_Categoria")
+}
+
+model Subcategories {
+  subcategory_id   Int                @id @default(autoincrement())
+  subcategory_name String             @db.VarChar(100)
+  category_id      Int
+  is_active        Int                @default(1) @db.TinyInt
+  created_at       DateTime           @default(now()) @db.Timestamp(0)
+  updated_at       DateTime           @default(now()) @db.Timestamp(0)
+  Projects         Projects[]
+  ProjectsVersions ProjectsVersions[]
+  Categories       Categories         @relation(fields: [category_id], references: [category_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_category_id")
+
+  @@index([category_id], map: "FK_category_id")
+  @@index([subcategory_name], map: "idx_subcategories_name")
+}
+
+model Unidades {
+  Id                       Int      @id @default(autoincrement())
+  Name                     String   @db.VarChar(255)
+  CantidadDormitorios      Int
+  CantidadSanitarios       Int
+  CantidadParqueos         Int
+  ValorPropiedad           Int
+  PrecioRentaTotal         Int
+  PrecioMantenimientoTotal Int?
+  SuperficieTotal          Int
+  LastRecolectionDate      DateTime @db.Date
+  ProyectoId               Int
+  Country                  String   @default("Guatemala") @db.VarChar(24)
+  Proyecto                 Proyecto @relation(fields: [ProyectoId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Unidad_Proyecto")
+
+  @@index([ProyectoId], map: "FK_Unidad_Proyecto")
+}
+
+model Units {
+  unit_id                    Int             @id @default(autoincrement())
+  unit_name                  String          @db.VarChar(255)
+  unit_bedrooms              Int
+  unit_parking_lots          Int
+  unit_toilets               Int
+  unit_maintenance_price     Int
+  unit_rent_price            Int
+  unit_total_area            Int
+  unit_property_value        Int
+  unit_last_recolection_date DateTime        @db.Date
+  project_id                 Int
+  is_active                  Int             @default(1) @db.TinyInt
+  created_at                 DateTime        @default(now()) @db.Timestamp(0)
+  updated_at                 DateTime        @default(now()) @db.Timestamp(0)
+  Projects                   Projects        @relation(fields: [project_id], references: [project_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_project_id")
+  UnitsVersions              UnitsVersions[]
+
+  @@index([project_id], map: "FK_project_id")
+}
+
+model UnitsVersions {
+  unit_version_uuid          String           @id @db.VarChar(200)
+  unit_id                    Int?
+  unit_name                  String           @db.VarChar(255)
+  unit_bedrooms              Int
+  unit_parking_lots          Int
+  unit_toilets               Int
+  unit_maintenance_price     Int
+  unit_rent_price            Int
+  unit_total_area            Int
+  unit_property_value        Int
+  unit_last_recolection_date DateTime         @db.Date
+  project_id                 Int
+  project_version_uuid       String           @db.VarChar(200)
+  is_active                  Int              @default(1) @db.TinyInt
+  created_at                 DateTime         @default(now()) @db.Timestamp(0)
+  updated_at                 DateTime         @default(now()) @db.Timestamp(0)
+  Projects                   Projects         @relation(fields: [project_id], references: [project_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Project_UnitVersions")
+  ProjectsVersions           ProjectsVersions @relation(fields: [project_version_uuid], references: [project_version_uuid], onDelete: NoAction, onUpdate: NoAction, map: "FK_UnitVersions_ProjectVersions")
+  Units                      Units?           @relation(fields: [unit_id], references: [unit_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Unit_UnitVersions")
+
+  @@index([project_id], map: "FK_Project_UnitVersions")
+  @@index([project_version_uuid], map: "FK_UnitVersions_ProjectVersions")
+  @@index([unit_id], map: "FK_Unit_UnitVersions")
+}
+
+model Uso {
+  id       Int        @id @default(autoincrement())
+  uso      String     @db.VarChar(20)
+  Proyecto Proyecto[]
+}
+
+model Zona {
+  id           Int        @id @default(autoincrement())
+  zona         String     @db.VarChar(50)
+  Municipio_id Int
+  Proyecto     Proyecto[]
+  Municipio    Municipio  @relation(fields: [Municipio_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Zona_Municipio")
+
+  @@index([Municipio_id], map: "Zona_Municipio")
+}
+
+model Zones {
+  zone_id          Int                @id @default(autoincrement())
+  zone_name        String             @db.VarChar(50)
+  municipality_id  Int
+  is_active        Int                @default(1) @db.TinyInt
+  created_at       DateTime           @default(now()) @db.Timestamp(0)
+  updated_at       DateTime           @default(now()) @db.Timestamp(0)
+  Projects         Projects[]
+  ProjectsVersions ProjectsVersions[]
+  Municipalities   Municipalities     @relation(fields: [municipality_id], references: [municipality_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_municipality_id")
+
+  @@index([municipality_id], map: "FK_municipality_id")
+  @@index([zone_name], map: "idx_zones_name")
+}
+
+model housing_amenities {
+  id                           Int              @id @default(autoincrement()) @db.UnsignedInt
+  proyecto                     String           @db.VarChar(100)
+  cod_proyecto                 String           @unique(map: "idx_housing_amenities_unique") @db.VarChar(100)
+  piscina_infantil             Boolean          @default(false)
+  piscina_interior             Boolean          @default(false)
+  piscina_exterior             Boolean          @default(false)
+  lap_pool                     Boolean          @default(false)
+  area_social_cerrada          Boolean          @default(false)
+  area_social_abierta          Boolean          @default(false)
+  area_social_terraza          Boolean          @default(false)
+  casa_club                    Boolean          @default(false)
+  tendedero_lavanderia_terraza Boolean          @default(false)
+  area_bbq                     Boolean          @default(false)
+  area_ninos                   Boolean          @default(false)
+  gimnasio                     Boolean          @default(false)
+  baby_gym_day_care            Boolean          @default(false)
+  area_verde_primer_nivel      Boolean          @default(false)
+  sky_park                     Boolean?         @default(false)
+  bar                          Boolean          @default(false)
+  coworking                    Boolean          @default(false)
+  business_center              Boolean          @default(false)
+  cancha_polideportiva         Boolean          @default(false)
+  cancha_tenis                 Boolean          @default(false)
+  cancha_basketball            Boolean          @default(false)
+  cancha_futball               Boolean          @default(false)
+  cancha_squash                Boolean          @default(false)
+  wifi                         Boolean          @default(false)
+  spa                          Boolean          @default(false)
+  sauna                        Boolean          @default(false)
+  caminamientos_jogging_track  Boolean          @default(false)
+  pet_friendly                 Boolean          @default(false)
+  fogatero                     Boolean          @default(false)
+  area_comercial               Boolean          @default(false)
+  cinema                       Boolean          @default(false)
+  salon_de_cocina              Boolean          @default(false)
+  zen_garden                   Boolean          @default(false)
+  espacio_para_ejercitarse     Boolean          @default(false)
+  camping_park                 Boolean          @default(false)
+  lobby                        Boolean          @default(false)
+  deck                         Boolean          @default(false)
+  jacuzzi                      Boolean          @default(false)
+  game_room                    Boolean          @default(false)
+  lavanderia                   Boolean          @default(false)
+  restaurante                  Boolean          @default(false)
+  golf                         Boolean          @default(false)
+  ecuestre                     Boolean          @default(false)
+  mini_golf                    Boolean          @default(false)
+  laguna                       Boolean          @default(false)
+  created_at                   DateTime         @default(now()) @db.Timestamp(0)
+  housing_universe             housing_universe @relation(fields: [cod_proyecto], references: [cod_proyecto], onDelete: NoAction, map: "fk_housing_amenities_cod_proyecto")
+
+  @@index([cod_proyecto], map: "fk_cod_proyecto")
+}
+
+model housing_services {
+  id                    Int              @id @default(autoincrement()) @db.UnsignedInt
+  proyecto              String           @db.VarChar(100)
+  cod_proyecto          String           @db.VarChar(100)
+  aceras                Int              @default(1)
+  agua_potable          Int              @default(1)
+  alcantarillado        Int              @default(1)
+  alumbrado_publico     Int              @default(1)
+  elevadores            Int              @default(1)
+  garita_seguridad      Int              @default(1)
+  planta_de_luz         Int              @default(1)
+  planta_de_tratamiento Int              @default(1)
+  pozo_propio           Int              @default(1)
+  created_at            DateTime         @default(now()) @db.Timestamp(0)
+  housing_universe      housing_universe @relation(fields: [cod_proyecto], references: [cod_proyecto], onDelete: NoAction, map: "fk_housing_services_cod_proyecto")
+
+  @@index([cod_proyecto], map: "fk_cod_proyecto")
+}
+
+model housing_units {
+  id                          Int              @id @default(autoincrement()) @db.UnsignedInt
+  proyecto                    String           @db.VarChar(255)
+  periodo                     String?          @db.VarChar(255)
+  frente_m2                   Decimal?         @db.Decimal(10, 2)
+  frente_v2                   Decimal?         @db.Decimal(10, 2)
+  fondo_m2                    Decimal?         @db.Decimal(10, 2)
+  fondo_v2                    Decimal?         @db.Decimal(10, 2)
+  m2_terreno                  Decimal?         @db.Decimal(10, 2)
+  v2_terreno                  Decimal?         @db.Decimal(10, 2)
+  topografia                  String?          @db.VarChar(50)
+  num_unidad                  String?          @db.VarChar(50)
+  modelo                      String?          @db.VarChar(255)
+  torre_fase                  String?          @db.VarChar(255)
+  unidad                      String?          @db.VarChar(255)
+  tama_o_unidad               Decimal?         @map("tamaño_unidad") @db.Decimal(10, 2)
+  tama_o_balcon_terraza       Decimal?         @map("tamaño_balcon_terraza") @db.Decimal(10, 2)
+  cant_dormitorios            Int?
+  cant_sanitarios             Int?
+  parqueo                     String?          @db.VarChar(2)
+  tipo_parqueo                String?          @db.VarChar(255)
+  cant_parqueos               Int?
+  parqueo_moto                String?          @db.VarChar(2)
+  tama_o_parqueo              Decimal?         @map("tamaño_parqueo") @db.Decimal(10, 2)
+  tama_o_total                Decimal?         @map("tamaño_total") @db.Decimal(10, 2)
+  construccion_habitable_m2   Decimal?         @db.Decimal(10, 2)
+  construccion_habitable_v2   Decimal?         @db.Decimal(10, 2)
+  uso                         String?          @db.VarChar(255)
+  precio_total_usd            Decimal?         @db.Decimal(15, 2)
+  precio_total_qtz            Decimal?         @db.Decimal(15, 2)
+  precio_sin_iva_usd          Decimal?         @db.Decimal(15, 2)
+  precio_sin_iva_qtz          Decimal?         @db.Decimal(15, 2)
+  precio_m2_usd               Decimal?         @db.Decimal(15, 2)
+  precio_v2_usd               Decimal?         @db.Decimal(15, 2)
+  precio_renta_usd            Decimal?         @db.Decimal(15, 2)
+  precio_renta_qtz            Decimal?         @db.Decimal(15, 2)
+  precio_renta_sin_iva_usd    Decimal?         @db.Decimal(15, 2)
+  precio_renta_sin_iva_qtz    Decimal?         @db.Decimal(15, 2)
+  precio_renta_m2_sin_iva_usd Decimal?         @db.Decimal(15, 2)
+  precio_renta_m2_sin_iva_qtz Decimal?         @db.Decimal(15, 2)
+  disponibilidad              String?          @db.VarChar(255)
+  precio_mantenimiento_total  Decimal?         @db.Decimal(15, 2)
+  precio_mantenimiento_m2     Decimal?         @db.Decimal(15, 2)
+  precio_mantenimiento_v2     Decimal?         @db.Decimal(15, 2)
+  categoria                   String?          @db.VarChar(100)
+  hora_recoleccion            DateTime?        @db.Time(0)
+  nse                         String?          @db.VarChar(10)
+  cuota                       Decimal?         @db.Decimal(10, 2)
+  ingresos                    Decimal?         @db.Decimal(10, 2)
+  absorcion_unitaria          Decimal?         @db.Decimal(15, 11)
+  absorcion_m2                Decimal?         @db.Decimal(15, 11)
+  cod_texto                   String?          @db.VarChar(255)
+  cod_proyecto                String           @db.VarChar(255)
+  created_at                  DateTime         @default(now()) @db.Timestamp(0)
+  housing_universe            housing_universe @relation(fields: [cod_proyecto], references: [cod_proyecto], onDelete: NoAction, map: "fk_housing_units_cod_proyecto")
+
+  @@index([cod_proyecto], map: "fk_cod_proyecto")
+  @@index([cod_proyecto, periodo], map: "idx_housing_units_cod_periodo")
+}
+
+model housing_universe {
+  id                        Int                @id @default(autoincrement()) @db.UnsignedInt
+  cod_proyecto              String?            @unique @db.VarChar(100)
+  fecha_recoleccion         DateTime?          @db.Date
+  proyecto                  String             @db.VarChar(50)
+  fase                      String?            @db.VarChar(100)
+  torre                     String?            @db.VarChar(100)
+  periodo                   String             @db.VarChar(20)
+  categoria                 String             @db.VarChar(20)
+  pais                      String             @db.VarChar(50)
+  departamento              String?            @db.VarChar(30)
+  municipio                 String?            @db.VarChar(30)
+  zona                      String?            @db.VarChar(30)
+  subzona                   String?            @db.VarChar(250)
+  desarrollador             String?            @db.VarChar(100)
+  estado                    String?            @db.VarChar(50)
+  uso                       String?            @db.VarChar(10)
+  fecha_inicio              DateTime?          @db.Date
+  fecha_entrega             DateTime?          @db.Date
+  meses_de_comercializacion Int?
+  latitud                   Decimal?           @db.Decimal(15, 8)
+  longitud                  Decimal?           @db.Decimal(15, 8)
+  fha                       String?            @db.VarChar(10)
+  total_unidades            Int?
+  total_m2                  Decimal?           @db.Decimal(10, 0)
+  tipo_de_seguridad         String?            @db.VarChar(100)
+  muvi                      String?            @db.VarChar(30)
+  unidades_disponibles      Int?
+  m2_disponibles            Decimal?           @db.Decimal(10, 2)
+  precio_promedio           Decimal?           @db.Decimal(15, 2)
+  tamano_promedio           Decimal?           @db.Decimal(10, 2)
+  precio_prom_m2            Decimal?           @db.Decimal(10, 2)
+  cuota_promedio            Decimal?           @db.Decimal(10, 2)
+  ingresos_promedio         Decimal?           @db.Decimal(10, 2)
+  nse_proyecto              String?            @db.VarChar(3)
+  showroom                  String?            @db.VarChar(20)
+  casa_modelo               String?            @db.VarChar(20)
+  cantidad_accesos          String?            @db.VarChar(10)
+  mercado                   String             @db.VarChar(20)
+  precio_parqueo_adicional  Decimal?           @db.Decimal(10, 2)
+  parqueos_visita           Int?
+  parqueos_asignados        Int?
+  total_parqueos_proyecto   Int
+  url_imagen                String?            @db.VarChar(500)
+  mig_number                Int?               @default(0)
+  created_at                DateTime           @default(now()) @db.Timestamp(0)
+  housing_amenities         housing_amenities?
+  housing_services          housing_services[]
+  housing_units             housing_units[]
+
+  @@unique([cod_proyecto, periodo], map: "idx_housing_universe_unique")
+  @@index([cod_proyecto], map: "idx_cod_proyecto")
+  @@index([cod_proyecto, periodo], map: "idx_housing_universe_cod_periodo")
+}
+
+model industrial_amenities {
+  id                            Int       @id @default(autoincrement())
+  COD                           String    @unique(map: "idx_industrial_amenities_unique") @db.VarChar(50)
+  patio_de_maniobras            Boolean?
+  sala_de_reuniones             Boolean?
+  area_de_coworking             Boolean?
+  cafeteria                     Boolean?
+  areas_verdes                  Boolean?
+  area_comercial                Boolean?
+  gimnasio_al_aire_libre        Boolean?
+  cancha_deportiva              Boolean?
+  parqueo_comun_de_contenedores Boolean?
+  sistema_contra_incendios      Boolean?
+  area_de_pilotos               Boolean?
+  vestibulo_con_ducha           Boolean?
+  area_de_descarga_en_garita    Boolean?
+  anden_comun                   Boolean?
+  area_social                   Boolean?
+  helipuerto                    Boolean?
+  area_de_oficinas              Boolean?
+  clinica_medica                Boolean?
+  zona_residencial              Boolean?
+  centros_educativos            Boolean?
+  ciclovias                     Boolean?
+  vias_peatonal                 Boolean?
+  otros                         Boolean?
+  created_at                    DateTime? @default(now()) @db.DateTime(0)
+}
+
+model industrial_units {
+  id                               Int       @id @default(autoincrement())
+  COD                              String    @db.VarChar(50)
+  proyecto                         String?   @db.VarChar(50)
+  periodo                          String?   @db.VarChar(50)
+  no_de_bodega                     String?   @db.VarChar(50)
+  fase                             String?   @db.VarChar(50)
+  sector_cluster                   String?   @db.VarChar(50)
+  categor_a                        String?   @map("categoría") @db.VarChar(50)
+  tamano_de_terreno_m2             Float?    @db.Float
+  tamano_de_terreno_v2             Float?    @db.Float
+  tamano_bodega_almacenamiento_m2  Float?    @db.Float
+  tamano_bodega_almacenamiento_v2  Float?    @db.Float
+  tamano_de_oficina_m2             Float?    @db.Float
+  tamano_de_mezzanine_m2           Float?    @db.Float
+  area_carga_m2                    Float?    @db.Float
+  ancho_1_m2                       Float?    @db.Float
+  fondo_1_m2                       Float?    @db.Float
+  fondo_2_m2                       Float?    @db.Float
+  alto_m2                          Float?    @db.Float
+  cantidad_banos                   Int?
+  parqueo_de_vehiculo              String?   @db.VarChar(50)
+  cantidad_de_parqueos             Int?
+  precio_por_parqueo_adicional_usd Float?    @db.Float
+  tamano_de_parqueos_m2            Float?    @db.Float
+  tamano_total_m2                  Float?    @db.Float
+  tamano_sin_parqueo_m2            Float?    @db.Float
+  uso                              String?   @db.VarChar(50)
+  precio_total_usd                 Float?    @db.Float
+  precio_total_qzl                 Float?    @db.Float
+  precio_sin_iva_usd               Float?    @db.Float
+  precio_sin_iva_qtz               Float?    @db.Float
+  precio_m2_usd                    Float?    @db.Float
+  precio_v2_usd                    Float?    @db.Float
+  precio_renta_usd                 Float?    @db.Float
+  precio_renta_qtz                 Float?    @db.Float
+  renta_sin_iva_usd                Float?    @db.Float
+  renta_sin_iva_qtz                Float?    @db.Float
+  renta_m2_usd                     Float?    @db.Float
+  renta_v2_usd                     Float?    @db.Float
+  Disponible                       String?   @db.VarChar(50)
+  precio_mantenimiento             Float?    @db.Float
+  mantenimiento_m2                 Float?    @db.Float
+  mantenimiento_v2                 Float?    @db.Float
+  fecha_recoleccion                DateTime? @db.Date
+  hora_recoleccion                 DateTime? @db.Time(0)
+  fecha_inicio                     DateTime? @db.Date
+  clasificacion                    String?   @db.VarChar(50)
+  absorcion_unitaria               Float?    @db.Float
+  absorcion_m2                     Float?    @db.Float
+  absorcion_v2                     Float?    @db.Float
+  created_at                       DateTime? @default(now()) @db.DateTime(0)
+
+  @@index([COD, periodo], map: "idx_industrial_units_cod_periodo")
+}
+
+model industrial_universe {
+  id                         Int       @id @default(autoincrement())
+  COD                        String    @db.VarChar(50)
+  proyecto                   String?   @db.VarChar(50)
+  fecha_recoleccion          DateTime? @db.Date
+  fase                       String?   @db.VarChar(50)
+  sector_cluster             String?   @db.VarChar(50)
+  periodo                    String?   @db.VarChar(50)
+  categoria                  String?   @db.VarChar(50)
+  desarrollador              String?   @db.VarChar(50)
+  pais                       String?   @db.VarChar(50)
+  departamento               String?   @db.VarChar(50)
+  municipio                  String?   @db.VarChar(50)
+  zona                       String?   @db.VarChar(50)
+  estado                     String?   @db.VarChar(50)
+  uso                        String?   @db.VarChar(50)
+  enfoque                    String?   @db.VarChar(50)
+  compartido_exclusivo       String?   @db.VarChar(50)
+  fecha_inicio               DateTime? @db.Date
+  fecha_entrega              DateTime? @db.Date
+  latitud                    Float?    @db.Float
+  longitud                   Float?    @db.Float
+  enganche                   String?   @db.VarChar(50)
+  enganche_fraccionado       String?   @db.VarChar(50)
+  meses_de_comercializacion  Int?
+  total_m2                   Float?    @db.Float
+  total_unidades             Int?
+  total_m2_disponibles       Float?    @db.Float
+  total_unidades_disponibles Int?
+  parqueos_asignados         Int?
+  parqueos_de_visita         Int?
+  total_parqueos_proyecto    Int?
+  lote_migracion             Int
+  created_at                 DateTime? @default(now()) @db.DateTime(0)
+
+  @@unique([COD, periodo], map: "idx_industrial_universe_unique")
+  @@index([COD], map: "idx_cod_industrial_universe")
+  @@index([COD, periodo], map: "idx_industrial_universe_cod_periodo")
+}
+
+model issAmenidades {
+  Guid_Proyecto_Amenidades String  @id @db.VarChar(100)
+  Guid_Proyecto            String? @db.VarChar(100)
+  iss_Proyecto             String? @db.VarChar(100)
+  iss_Amenidad             String? @db.VarChar(100)
+}
+
+model office_amenities {
+  id                       Int             @id @default(autoincrement()) @db.UnsignedInt
+  proyecto                 String          @db.VarChar(50)
+  cod_proyecto             String          @db.VarChar(100)
+  lobby                    Boolean         @default(false)
+  restaurante_foodcourt    Boolean         @default(false)
+  area_comedores_cafeteria Boolean         @default(false)
+  spa                      Boolean         @default(false)
+  terraza                  Boolean         @default(false)
+  areas_verdes             Boolean         @default(false)
+  area_comercial           Boolean         @default(false)
+  co_working               Boolean         @default(false)
+  business_center          Boolean         @default(false)
+  gym                      Boolean         @default(false)
+  game_room                Boolean         @default(false)
+  area_social_cerrada      Boolean         @default(false)
+  area_descanso            Boolean         @default(false)
+  area_social_abierta      Boolean         @default(false)
+  salones_para_eventos     Boolean         @default(false)
+  helipuerto               Boolean         @default(false)
+  kids_playground          Boolean         @default(false)
+  beach_club               Boolean         @default(false)
+  plaza_financiera         Boolean         @default(false)
+  area_paqueteria          Boolean         @default(false)
+  creation_date            DateTime        @default(now()) @db.DateTime(0)
+  office_universe          office_universe @relation(fields: [cod_proyecto], references: [cod_proyecto], onDelete: NoAction, map: "fk_office_amenities_cod_proyecto")
+
+  @@index([cod_proyecto], map: "fk_cod_proyecto_office")
+}
+
+model office_units {
+  id                                Int             @id @default(autoincrement()) @db.UnsignedInt
+  proyecto                          String?         @db.VarChar(255)
+  cod_proyecto                      String          @db.VarChar(255)
+  periodo                           String?         @db.VarChar(255)
+  no_unidad                         String?         @db.VarChar(255)
+  torre                             String?         @db.VarChar(15)
+  unidad                            String?         @db.VarChar(60)
+  tamano_de_unidad_m2               Decimal?        @db.Decimal(10, 2)
+  tamano_de_balcon_o_terraza_m2     Decimal?        @db.Decimal(10, 2)
+  parqueo_de_vehiculo               String?         @db.VarChar(10)
+  cantidad_de_parqueos_unidad       Int?
+  parqueos_para_venta               Int?
+  tamano_parqueo_m2                 Decimal?        @db.Decimal(10, 2)
+  construccion_total_m2             Decimal?        @db.Decimal(10, 2)
+  construccion_habitable_m2         Decimal?        @db.Decimal(10, 2)
+  uso                               String?         @db.VarChar(255)
+  precio_total_usd                  Decimal?        @db.Decimal(15, 2)
+  precio_total_qtz                  Decimal?        @db.Decimal(15, 2)
+  precio_sin_iva_usd                Decimal?        @db.Decimal(15, 2)
+  precio_sin_iva_qtz                Decimal?        @db.Decimal(15, 2)
+  precio_m2_usd                     Decimal?        @db.Decimal(15, 2)
+  precio_renta_usd                  Decimal?        @db.Decimal(15, 2)
+  precio_renta_qtz                  Decimal?        @db.Decimal(15, 2)
+  renta_sin_iva_usd                 Decimal?        @db.Decimal(15, 2)
+  renta_sin_iva_qtz                 Decimal?        @db.Decimal(15, 2)
+  renta_m2_usd                      Decimal?        @db.Decimal(15, 2)
+  disponibilidad                    String?         @db.VarChar(255)
+  precio_mantenimiento              Decimal?        @db.Decimal(15, 2)
+  mantenimiento_m2                  Decimal?        @db.Decimal(15, 2)
+  cantidad_empleados                String?         @db.VarChar(255)
+  fecha_recoleccion                 DateTime?       @db.Date
+  hora_recoleccion                  DateTime?       @db.Time(0)
+  fecha_inicio                      DateTime?       @db.Date
+  m2_sin_parqueo_usd                Decimal?        @db.Decimal(10, 2)
+  valor_propiedad_sin_parqueo_usd   Decimal?        @db.Decimal(10, 2)
+  clasificacion_oficina             String?         @db.VarChar(255)
+  clasificacion_general_por_tama_o  String?         @map("clasificacion_general_por_tamaño") @db.VarChar(255)
+  leyenda_cantidad_empleados        String?         @db.VarChar(255)
+  leyenda_cantidad_m2               String?         @db.VarChar(255)
+  leyenda_tama_o_cantidad_empleados String?         @map("leyenda_tamaño_cantidad_empleados") @db.VarChar(255)
+  leyenda_tama_o_m2                 String?         @map("leyenda_tamaño_m2") @db.VarChar(255)
+  absorcion_unitaria                Decimal?        @db.Decimal(20, 11)
+  absorcion_m2                      Decimal?        @db.Decimal(20, 11)
+  creation_date                     DateTime        @default(now()) @db.DateTime(0)
+  office_universe                   office_universe @relation(fields: [cod_proyecto], references: [cod_proyecto], onDelete: Cascade, map: "fk_office_units_cod_proyecto")
+
+  @@index([cod_proyecto], map: "fk_cod_proyecto_office")
+  @@index([cod_proyecto, periodo], map: "idx_office_units_cod_periodo")
+}
+
+model office_universe {
+  id                         Int                @id @default(autoincrement()) @db.UnsignedInt
+  cod_proyecto               String             @unique @db.VarChar(100)
+  fecha_recoleccion          DateTime           @db.Date
+  proyecto                   String             @db.VarChar(50)
+  periodo                    String             @db.VarChar(20)
+  enfoque_principal          String             @db.VarChar(50)
+  enfoque_secundario         String             @db.VarChar(50)
+  desarrollador              String?            @db.VarChar(50)
+  pais                       String?            @db.VarChar(20)
+  zona                       String?            @db.VarChar(30)
+  estado                     String?            @db.VarChar(50)
+  fecha_inicio               DateTime?          @db.Date
+  fecha_entrega              DateTime?          @db.Date
+  meses_de_comercializacion  Int?
+  latitud                    Decimal?           @db.Decimal(11, 8)
+  longitud                   Decimal?           @db.Decimal(11, 8)
+  uso                        String             @db.VarChar(10)
+  precio_parqueo             Decimal            @db.Decimal(10, 2)
+  parqueos_asignados         Int
+  parqueos_para_venta        Int
+  parqueos_visitas           Int
+  total_parqueos             Int?
+  total_m2                   Decimal            @db.Decimal(10, 2)
+  total_unidades             Int
+  total_m2_disponibles       Decimal            @db.Decimal(10, 2)
+  total_unidades_disponibles Int
+  enganche                   String?            @db.VarChar(10)
+  enganche_fraccionado       String             @db.VarChar(20)
+  lote_migracion             Int
+  creation_date              DateTime           @default(now()) @db.DateTime(0)
+  office_amenities           office_amenities[]
+  office_units               office_units[]
+
+  @@unique([cod_proyecto, periodo], map: "idx_office_universe_unique")
+  @@index([cod_proyecto], map: "idx_cod_proyecto_office")
 }
