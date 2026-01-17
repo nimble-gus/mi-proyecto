@@ -11,7 +11,7 @@ Aplicación fullstack desarrollada con Next.js y TypeScript que permite buscar p
 - **TailwindCSS** - Framework de CSS utility-first
 
 ### Base de Datos
-- **Prisma 7.2.0** - ORM para TypeScript/Node.js
+- **Prisma 6.19.2** - ORM para TypeScript/Node.js
 - **MySQL** - Sistema de gestión de base de datos relacional
 - **DBeaver** - Herramienta de administración de base de datos
 
@@ -20,20 +20,19 @@ Aplicación fullstack desarrollada con Next.js y TypeScript que permite buscar p
 ```
 mi-proyecto/
 ├── app/
-│   ├── page.tsx              # Frontend (buscador)
+│   ├── page.tsx              # Frontend (buscador) ✅
 │   ├── api/
 │   │   └── projects/
-│   │       └── route.ts      # Backend (GET ?q=...)
+│   │       └── route.ts      # Backend (GET ?q=...) ✅
+│   ├── generated/
+│   │   └── prisma/           # Cliente de Prisma generado
 │   ├── layout.tsx
 │   └── globals.css
 ├── lib/
-│   └── prisma.ts             # PrismaClient singleton (pendiente)
-├── app/
-│   └── generated/
-│       └── prisma/           # Cliente de Prisma generado
+│   └── prisma.ts             # PrismaClient singleton ✅
 ├── prisma/
 │   └── schema.prisma         # Schema de Prisma (36 modelos importados)
-├── prisma.config.ts          # Configuración de Prisma con DATABASE_URL
+├── prisma.config.ts          # Configuración de Prisma (opcional)
 ├── .env                      # Variables de entorno
 ├── package.json
 └── README.md
@@ -55,28 +54,46 @@ La aplicación permite buscar proyectos por nombre mediante una API REST que dev
 
 #### Respuesta
 
-La API devuelve un array de proyectos que coinciden con la búsqueda. Cada proyecto contiene **3 campos** (a definir posteriormente en el schema de Prisma).
-
-Ejemplo de respuesta:
+La API devuelve un array de proyectos que coinciden con la búsqueda. Cada proyecto contiene los siguientes campos desde la tabla `housing_universe`:
 
 ```json
 {
   "projects": [
     {
-      "campo1": "valor1",
-      "campo2": "valor2",
-      "campo3": "valor3"
+      "proyecto": "Nombre del Proyecto",
+      "categoria": "Categoría",
+      "zona": "Zona",
+      "estado": "Estado"
     }
   ]
 }
 ```
 
+**Características de la búsqueda:**
+- Búsqueda parcial (contiene) en el campo `proyecto`
+- Máximo 20 resultados
+- Ordenados alfabéticamente por nombre de proyecto
+- Si `q` está vacío o no se proporciona, retorna `{ projects: [] }`
+
 #### Frontend
 
-El componente `app/page.tsx` contiene la interfaz del buscador que permite:
-- Ingresar el nombre del proyecto a buscar
-- Realizar la búsqueda mediante el endpoint de la API
-- Mostrar los resultados de la búsqueda
+El componente `app/page.tsx` contiene la interfaz del buscador implementada con las siguientes características:
+
+**Funcionalidades:**
+- ✅ Input controlado con búsqueda en tiempo real
+- ✅ Debounce de 300ms para optimizar las peticiones
+- ✅ Estados de carga ("Buscando…")
+- ✅ Manejo de errores con mensajes claros
+- ✅ Muestra resultados con los campos: `proyecto`, `categoria`, `zona`, `estado`
+- ✅ Mensaje cuando no hay resultados
+- ✅ Limpia resultados automáticamente cuando el input está vacío
+- ✅ Diseño responsive con Tailwind CSS
+- ✅ Soporte para modo oscuro
+
+**Tecnologías:**
+- React Hooks (`useState`, `useEffect`, `useCallback`)
+- TypeScript con tipos bien definidos
+- Fetch API para comunicación con el backend
 
 ## 🚀 Configuración e Instalación
 
@@ -104,19 +121,18 @@ Crear un archivo `.env` en la raíz del proyecto con la cadena de conexión a My
 DATABASE_URL="mysql://usuario:contraseña@host:puerto/nombre_base_datos"
 ```
 
-> **Nota:** En Prisma 7, la URL de la base de datos se configura en `prisma.config.ts`, no en el `schema.prisma`.
-
 4. Configurar Prisma con MySQL:
 
-El archivo `prisma/schema.prisma` ya está configurado para usar MySQL:
+El archivo `prisma/schema.prisma` está configurado para usar MySQL:
 
 ```prisma
 datasource db {
   provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 ```
 
-La URL de conexión se lee desde `prisma.config.ts` que utiliza la variable de entorno `DATABASE_URL`.
+> **Nota:** Este proyecto usa Prisma v6. En v7 la configuración cambió, por lo que se decidió usar v6 para compatibilidad con `new PrismaClient()` sin adapters.
 
 5. Importar el schema de la base de datos existente:
 
@@ -138,10 +154,14 @@ Este comando genera el cliente de Prisma en `app/generated/prisma` que se utiliz
 
 ## ✅ Configuración Completada
 
-- ✅ Conexión a MySQL configurada (`prisma.config.ts` y `.env`)
+- ✅ Conexión a MySQL configurada (`.env` con `DATABASE_URL`)
+- ✅ Prisma v6.19.2 instalado y configurado
 - ✅ Schema de Prisma importado desde la base de datos (36 modelos)
-- ✅ Cliente de Prisma generado
-- ✅ Dependencias instaladas (incluyendo `dotenv` para `prisma.config.ts`)
+- ✅ Cliente de Prisma generado en `app/generated/prisma`
+- ✅ Dependencias instaladas (incluyendo `dotenv`)
+- ✅ `lib/prisma.ts` - Singleton de PrismaClient implementado
+- ✅ `app/api/projects/route.ts` - Endpoint GET implementado
+- ✅ `app/page.tsx` - Frontend completo con búsqueda en tiempo real
 
 ## 🏃 Ejecutar el Proyecto
 
@@ -164,23 +184,36 @@ npm start
 
 ### Configuración de Prisma Client
 
-El archivo `lib/prisma.ts` (pendiente de crear) exportará una instancia singleton de PrismaClient para evitar múltiples conexiones en desarrollo con hot-reload de Next.js. El cliente generado se encuentra en `app/generated/prisma`.
+El archivo `lib/prisma.ts` exporta una instancia singleton de PrismaClient para evitar múltiples conexiones en desarrollo con hot-reload de Next.js. El cliente generado se encuentra en `app/generated/prisma`.
 
-**Nota sobre Prisma 7:** En esta versión, la configuración de la conexión se realiza en `prisma.config.ts` en lugar del `schema.prisma`, y el cliente se genera en una ubicación personalizada mediante el `generator client`.
+**Importante:** Se usa Prisma v6 (no v7) para evitar la necesidad de adapters o accelerateUrl. Con v6, `new PrismaClient()` funciona sin configuración adicional.
 
 ### Endpoint de Búsqueda
 
-El archivo `app/api/projects/route.ts` contiene la lógica del endpoint GET que:
-1. Recibe el parámetro de consulta `q`
-2. Realiza la búsqueda en la base de datos usando Prisma
-3. Devuelve los resultados en formato JSON
+El archivo `app/api/projects/route.ts` contiene la lógica del endpoint GET implementada:
+
+1. ✅ Lee el parámetro de consulta `q` desde la URL
+2. ✅ Valida y limpia el término de búsqueda (trim)
+3. ✅ Si `q` está vacío → retorna `{ projects: [] }`
+4. ✅ Busca en la tabla `housing_universe` por el campo `proyecto` usando búsqueda parcial (`contains`)
+5. ✅ Limita resultados a 20 y ordena por nombre ascendente
+6. ✅ Selecciona únicamente: `proyecto`, `categoria`, `zona`, `estado`
+7. ✅ Retorna formato JSON: `{ projects: [...] }`
+8. ✅ Manejo de errores con status 500 y mensaje simple
 
 ### Frontend del Buscador
 
-El archivo `app/page.tsx` contiene el componente del buscador que:
-1. Maneja el estado del input de búsqueda
-2. Realiza peticiones a la API cuando el usuario busca
-3. Muestra los resultados obtenidos
+El archivo `app/page.tsx` contiene el componente del buscador implementado con:
+
+1. ✅ **Tipos TypeScript bien definidos**: Interface `Project` con los campos exactos del backend
+2. ✅ **Estados mínimos**: `query`, `projects`, `loading`, `error`
+3. ✅ **Input controlado**: `value` y `onChange` correctamente implementados
+4. ✅ **Llamada al backend**: Usa `fetch` con `encodeURIComponent` para la query
+5. ✅ **Comportamiento con input vacío**: Limpia resultados sin hacer requests innecesarios
+6. ✅ **Debounce**: Espera 300ms antes de disparar la búsqueda
+7. ✅ **Render de estados**: Muestra loading, errores y "No hay resultados" correctamente
+8. ✅ **Render de resultados**: Muestra los 4 campos definidos con manejo de valores null
+9. ✅ **Buenas prácticas**: Sin credenciales, sin URLs absolutas, código limpio
 
 - `npm run dev` - Inicia el servidor de desarrollo
 - `npm run build` - Construye la aplicación para producción
@@ -189,35 +222,71 @@ El archivo `app/page.tsx` contiene el componente del buscador que:
 
 ## 📋 Estado del Proyecto
 
-### ✅ Completado
+### ✅ Completado - Proyecto Funcional
 
 1. ✅ Estructura del proyecto configurada (Next.js + TypeScript)
-2. ✅ Prisma instalado y configurado para MySQL
+2. ✅ Prisma v6.19.2 instalado y configurado para MySQL
 3. ✅ Conexión a la base de datos establecida
-4. ✅ Schema importado desde MySQL (36 modelos, incluyendo `Projects`)
+4. ✅ Schema importado desde MySQL (36 modelos desde `housing_universe`, `Projects`, etc.)
 5. ✅ Cliente de Prisma generado en `app/generated/prisma`
+6. ✅ `lib/prisma.ts` - Singleton de PrismaClient implementado
+7. ✅ `app/api/projects/route.ts` - Endpoint GET `/api/projects` implementado
+8. ✅ Búsqueda funcional en tabla `housing_universe` por campo `proyecto`
+9. ✅ Campos de respuesta definidos: `proyecto`, `categoria`, `zona`, `estado`
+10. ✅ `app/page.tsx` - Frontend completo con búsqueda en tiempo real
+11. ✅ Debounce implementado (300ms)
+12. ✅ Manejo de estados (loading, error, resultados vacíos)
+13. ✅ Diseño responsive con Tailwind CSS
+14. ✅ TypeScript con tipos bien definidos
 
-### 🚧 Próximos Pasos
+### 🎉 Proyecto Listo para Usar
 
-1. **Crear instancia de PrismaClient** (`lib/prisma.ts`)
-   - Implementar singleton para evitar múltiples conexiones en desarrollo
-   - Configurar para usar el cliente generado desde `app/generated/prisma`
+El proyecto está completamente funcional. Puedes:
+- Iniciar el servidor con `npm run dev`
+- Acceder a [http://localhost:3000](http://localhost:3000)
+- Buscar proyectos por nombre en tiempo real
+- Ver resultados con los campos: proyecto, categoria, zona, estado
 
-2. **Implementar endpoint de búsqueda** (`app/api/projects/route.ts`)
-   - Crear ruta GET que reciba el parámetro `q` (query)
-   - Buscar proyectos por nombre usando `project_name` del modelo `Projects`
-   - Retornar 3 campos específicos (a definir) en formato JSON
+## 🧪 Probar la Aplicación
 
-3. **Desarrollar interfaz de búsqueda** (`app/page.tsx`)
-   - Crear componente de búsqueda con input
-   - Conectar con el endpoint `/api/projects?q=...`
-   - Mostrar resultados de la búsqueda
+### Desde el Navegador (Recomendado)
 
-4. **Definir campos de respuesta**
-   - Seleccionar los 3 campos específicos que se retornarán en la búsqueda
-   - Actualizar la documentación del endpoint
+1. Inicia el servidor:
+   ```bash
+   npm run dev
+   ```
 
-5. **Pruebas y validación**
-   - Probar búsqueda con diferentes términos
-   - Validar manejo de errores
-   - Verificar formato de respuesta
+2. Abre [http://localhost:3000](http://localhost:3000) en tu navegador
+
+3. Escribe en el campo de búsqueda y observa:
+   - La búsqueda se ejecuta automáticamente después de 300ms
+   - Muestra "Buscando…" mientras carga
+   - Muestra los resultados con los campos: proyecto, categoria, zona, estado
+   - Muestra "No hay resultados" si no encuentra coincidencias
+
+### Probar el Endpoint Directamente
+
+También puedes probar el endpoint directamente:
+
+```bash
+# Sin query (debe retornar { projects: [] })
+GET http://localhost:3000/api/projects
+
+# Query vacío (debe retornar { projects: [] })
+GET http://localhost:3000/api/projects?q=
+
+# Con término de búsqueda
+GET http://localhost:3000/api/projects?q=nombre_proyecto
+```
+
+### Verificar en DBeaver
+
+Puedes comparar los resultados con una consulta directa en DBeaver:
+
+```sql
+SELECT proyecto, categoria, zona, estado 
+FROM housing_universe 
+WHERE proyecto LIKE '%nombre_proyecto%' 
+ORDER BY proyecto ASC 
+LIMIT 20;
+```
