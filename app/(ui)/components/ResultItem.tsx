@@ -22,6 +22,12 @@ export function ResultItem({ project, onOpenDetails }: ResultItemProps) {
                 <span className="font-medium">Zona:</span> {project.zona}
               </div>
             )}
+            <div>
+              <span className="font-medium">Período:</span> {project.periodo}
+            </div>
+            <div>
+              <span className="font-medium">Total Unidades:</span> {project.total_unidades ?? 0}
+            </div>
           </div>
         </div>
         <button

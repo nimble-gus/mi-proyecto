@@ -1,22 +1,28 @@
 interface FiltersBarProps {
   zones: string[];
   categories: string[];
+  periods: string[];
   loadingCatalogues: boolean;
   selectedZone: string;
   setSelectedZone: (zone: string) => void;
   selectedCategory: string;
   setSelectedCategory: (category: string) => void;
+  selectedPeriod: string;
+  setSelectedPeriod: (period: string) => void;
   onClearFilters: () => void;
 }
 
 export function FiltersBar({
   zones,
   categories,
+  periods,
   loadingCatalogues,
   selectedZone,
   setSelectedZone,
   selectedCategory,
   setSelectedCategory,
+  selectedPeriod,
+  setSelectedPeriod,
   onClearFilters,
 }: FiltersBarProps) {
   const handleZoneChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -25,6 +31,10 @@ export function FiltersBar({
 
   const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedCategory(e.target.value);
+  };
+
+  const handlePeriodChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedPeriod(e.target.value);
   };
 
   return (
@@ -38,7 +48,7 @@ export function FiltersBar({
         </p>
       )}
       {!loadingCatalogues && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div className="flex flex-col gap-2">
             <label
               htmlFor="zone-selector"
@@ -94,9 +104,37 @@ export function FiltersBar({
               </p>
             )}
           </div>
+
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="period-selector"
+              className="text-sm font-medium text-black dark:text-zinc-50"
+            >
+              Período
+            </label>
+            <select
+              id="period-selector"
+              value={selectedPeriod}
+              onChange={handlePeriodChange}
+              disabled={loadingCatalogues || periods.length === 0}
+              className="rounded-lg border border-zinc-300 bg-white px-4 py-3 text-base text-black focus:border-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-zinc-500 dark:disabled:bg-zinc-800 dark:disabled:text-zinc-400"
+            >
+              <option value="">Todos los períodos</option>
+              {periods.map((period) => (
+                <option key={period} value={period}>
+                  {period}
+                </option>
+              ))}
+            </select>
+            {loadingCatalogues && (
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                Cargando períodos...
+              </p>
+            )}
+          </div>
         </div>
       )}
-      {(selectedZone || selectedCategory) && (
+      {(selectedZone || selectedCategory || selectedPeriod) && (
         <button
           type="button"
           onClick={onClearFilters}

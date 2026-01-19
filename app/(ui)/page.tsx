@@ -18,6 +18,7 @@ export default function Home() {
   // Estados de filtros
   const [selectedZone, setSelectedZone] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedPeriod, setSelectedPeriod] = useState<string>("");
 
   // Hook de autocomplete
   const autocomplete = useProjectAutocomplete();
@@ -26,7 +27,7 @@ export default function Home() {
   const catalogs = useCatalogs(selectedProject);
 
   // Hook de búsqueda de resultados
-  const recordsSearch = useRecordsSearch(selectedProject, selectedZone, selectedCategory);
+  const recordsSearch = useRecordsSearch(selectedProject, selectedZone, selectedCategory, selectedPeriod);
 
   // Hook de detalles del modal
   const recordDetails = useRecordDetails();
@@ -39,6 +40,7 @@ export default function Home() {
     recordsSearch.setPage(1);
     setSelectedZone("");
     setSelectedCategory("");
+    setSelectedPeriod("");
   }, [autocomplete, recordsSearch]);
 
   const handleClearProject = useCallback(() => {
@@ -47,6 +49,7 @@ export default function Home() {
     autocomplete.setIsOpen(false);
     setSelectedZone("");
     setSelectedCategory("");
+    setSelectedPeriod("");
     recordsSearch.setPage(1);
   }, [autocomplete, recordsSearch]);
 
@@ -60,9 +63,15 @@ export default function Home() {
     recordsSearch.setPage(1);
   }, [recordsSearch]);
 
+  const handlePeriodChange = useCallback((period: string) => {
+    setSelectedPeriod(period);
+    recordsSearch.setPage(1);
+  }, [recordsSearch]);
+
   const handleClearFilters = useCallback(() => {
     setSelectedZone("");
     setSelectedCategory("");
+    setSelectedPeriod("");
     recordsSearch.setPage(1);
   }, [recordsSearch]);
 
@@ -74,7 +83,7 @@ export default function Home() {
             Filtrado de Proyectos
           </h1>
           <p className="text-zinc-600 dark:text-zinc-400">
-            Selecciona un proyecto y filtra sus registros por zona y categoría.
+            Selecciona un proyecto y filtra sus registros por zona, categoría y período.
           </p>
         </div>
 
@@ -108,18 +117,21 @@ export default function Home() {
             <FiltersBar
               zones={catalogs.zones}
               categories={catalogs.categories}
+              periods={catalogs.periods}
               loadingCatalogues={catalogs.loadingCatalogues}
               selectedZone={selectedZone}
               setSelectedZone={handleZoneChange}
               selectedCategory={selectedCategory}
               setSelectedCategory={handleCategoryChange}
+              selectedPeriod={selectedPeriod}
+              setSelectedPeriod={handlePeriodChange}
               onClearFilters={handleClearFilters}
             />
 
             <div className="flex gap-3">
               <button
                 type="button"
-                onClick={recordsSearch.handleSearch}
+                onClick={() => recordsSearch.handleSearch()}
                 disabled={recordsSearch.loadingResults}
                 className="rounded-lg bg-zinc-900 px-6 py-3 text-base font-medium text-white transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-50 dark:text-black dark:hover:bg-zinc-200"
               >

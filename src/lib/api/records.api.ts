@@ -4,6 +4,7 @@ export interface SearchRecordsParams {
   project: string;
   zone?: string;
   category?: string;
+  period?: string;
   page?: number;
   pageSize?: number;
 }
@@ -46,6 +47,10 @@ export async function searchRecords(params: SearchRecordsParams): Promise<Record
 
   if (params.category) {
     searchParams.append("category", params.category);
+  }
+
+  if (params.period) {
+    searchParams.append("period", params.period);
   }
 
   const response = await fetch(`/api/records?${searchParams.toString()}`);

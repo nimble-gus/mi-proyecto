@@ -1,6 +1,6 @@
 # Mi Proyecto - Filtrado de Proyectos
 
-Aplicación fullstack desarrollada con Next.js y TypeScript que permite seleccionar proyectos, filtrar por zona y categoría, y visualizar resultados paginados con detalles completos.
+Aplicación fullstack desarrollada con Next.js y TypeScript que permite seleccionar proyectos, filtrar por zona, categoría y período, y visualizar resultados paginados con detalles completos.
 
 ## 🛠️ Stack Tecnológico
 
@@ -19,14 +19,14 @@ Aplicación fullstack desarrollada con Next.js y TypeScript que permite seleccio
 mi-proyecto/
 ├── app/
 │   ├── (ui)/
-│   │   ├── page.tsx                    # Componente principal (composición)
+│   │   ├── page.tsx                    # Componente principal (solo composición)
 │   │   └── components/
 │   │       ├── ProjectAutocomplete.tsx # Selector de proyecto con autocomplete
-│   │       ├── FiltersBar.tsx          # Filtros de zona y categoría
+│   │       ├── FiltersBar.tsx          # Filtros de zona, categoría y período
 │   │       ├── ResultsList.tsx         # Lista de resultados paginados
-│   │       ├── ResultItem.tsx          # Item individual de resultado
+│   │       ├── ResultItem.tsx          # Item individual (proyecto, categoría, zona, período)
 │   │       ├── DetailsModal.tsx        # Modal con detalles completos
-│   │       └── Pagination.tsx          # Componente de paginación
+│   │       └── Pagination.tsx          # Componente de paginación (5 por página)
 │   ├── api/
 │   │   ├── projects/
 │   │   │   └── route.ts                # GET /api/projects - Búsqueda por prefijo
@@ -34,6 +34,8 @@ mi-proyecto/
 │   │   │   └── route.ts                # GET /api/zones - Catálogo de zonas
 │   │   ├── categories/
 │   │   │   └── route.ts                # GET /api/categories - Catálogo categorías
+│   │   ├── periods/
+│   │   │   └── route.ts                # GET /api/periods - Catálogo de períodos
 │   │   └── records/
 │   │       ├── route.ts                # GET /api/records - Resultados paginados
 │   │       └── [id]/
@@ -42,24 +44,24 @@ mi-proyecto/
 │   └── globals.css
 ├── src/
 │   ├── hooks/
-│   │   ├── useProjectAutocomplete.ts   # Hook: autocomplete + debounce
-│   │   ├── useCatalogs.ts              # Hook: carga de catálogos
-│   │   ├── useRecordsSearch.ts        # Hook: búsqueda paginada
-│   │   └── useRecordDetails.ts        # Hook: modal + cache
+│   │   ├── useProjectAutocomplete.ts   # Hook: autocomplete + debounce (300ms)
+│   │   ├── useCatalogs.ts              # Hook: carga automática de catálogos (zonas, categorías, períodos)
+│   │   ├── useRecordsSearch.ts        # Hook: búsqueda paginada (5 por página)
+│   │   └── useRecordDetails.ts        # Hook: modal + cache de detalles
 │   ├── lib/
 │   │   ├── prisma.ts                  # PrismaClient singleton
 │   │   └── api/
-│   │       ├── projects.api.ts         # API: búsqueda de proyectos
-│   │       ├── catalogs.api.ts        # API: zonas y categorías
-│   │       └── records.api.ts         # API: registros y detalles
+│   │       ├── projects.api.ts         # API: searchProjects(query)
+│   │       ├── catalogs.api.ts        # API: getZones(project), getCategories(project), getPeriods(project)
+│   │       └── records.api.ts         # API: searchRecords(params), getRecordDetails(id)
 │   └── types/
-│       ├── domain.ts                  # Tipos del dominio (Project, RecordDetails)
-│       └── api.ts                     # Tipos de respuestas API
+│       ├── domain.ts                  # Tipos: Project, SelectedProject, RecordDetails
+│       └── api.ts                     # Tipos: respuestas de API
 ├── generated/
 │   └── prisma/                        # Cliente de Prisma generado
 ├── prisma/
-│   └── schema.prisma                  # Schema de Prisma (36 modelos)
-├── .env                               # Variables de entorno
+│   └── schema.prisma                  # Schema de Prisma (36 modelos desde MySQL)
+├── .env                               # Variables de entorno (DATABASE_URL)
 └── README.md
 ```
 
@@ -83,6 +85,7 @@ Usuario selecciona un proyecto
 Se carga automáticamente:
   - GET /api/zones?project=...
   - GET /api/categories?project=...
+  - GET /api/periods?project=...
 ```
 
 **Componentes involucrados:**
@@ -94,19 +97,19 @@ Se carga automáticamente:
 ```
 Proyecto seleccionado
     ↓
-Filtros disponibles (zona y categoría)
+Filtros disponibles (zona, categoría y período)
     ↓
 Usuario selecciona filtros (opcional)
     ↓
 Usuario hace click en "Buscar"
     ↓
-GET /api/records?project=...&zone=...&category=...&page=1&pageSize=5
+GET /api/records?project=...&zone=...&category=...&period=...&page=1&pageSize=5
 ```
 
 **Componentes involucrados:**
-- `FiltersBar` - Selectores de zona y categoría
-- `useCatalogs` - Hook que carga catálogos dinámicos
-- `useRecordsSearch` - Hook que ejecuta búsqueda paginada
+- `FiltersBar` - Selectores de zona, categoría y período
+- `useCatalogs` - Hook que carga catálogos dinámicos (zonas, categorías, períodos)
+- `useRecordsSearch` - Hook que ejecuta búsqueda paginada con todos los filtros
 
 ### 3. Visualización de Resultados Paginados
 
@@ -114,6 +117,12 @@ GET /api/records?project=...&zone=...&category=...&page=1&pageSize=5
 Búsqueda ejecutada
     ↓
 Muestra 5 resultados por página
+    ↓
+Cada resultado muestra:
+  - Proyecto
+  - Categoría
+  - Zona (si existe)
+  - Período
     ↓
 Información de paginación:
   - "Mostrando X - Y de Z resultados"
@@ -127,7 +136,7 @@ Búsqueda automática con nueva página
 
 **Componentes involucrados:**
 - `ResultsList` - Lista de resultados
-- `ResultItem` - Item individual
+- `ResultItem` - Item individual (muestra proyecto, categoría, zona, período)
 - `Pagination` - Navegación de páginas
 - `useRecordsSearch` - Hook con lógica de paginación
 
@@ -164,52 +173,62 @@ Muestra modal con todos los campos:
 **Ubicación:** `app/(ui)/components/`
 
 Componentes presentacionales que solo reciben props y renderizan UI:
-- `ProjectAutocomplete` - Input y dropdown
-- `FiltersBar` - Selectores de filtros
-- `ResultsList` - Lista de resultados
-- `ResultItem` - Item individual
-- `DetailsModal` - Modal de detalles
-- `Pagination` - Navegación de páginas
+
+- **`ProjectAutocomplete`** - Input y dropdown con búsqueda en tiempo real
+- **`FiltersBar`** - Selectores de filtros (zona, categoría y período)
+- **`ResultsList`** - Lista de resultados con estados de carga/error
+- **`ResultItem`** - Item individual que muestra: proyecto, categoría, zona, período
+- **`DetailsModal`** - Modal con detalles completos organizados en secciones
+- **`Pagination`** - Navegación entre páginas con información de resultados
 
 ### Capa de Lógica (Hooks)
 **Ubicación:** `src/hooks/`
 
 Hooks personalizados que encapsulan lógica de negocio:
-- `useProjectAutocomplete` - Búsqueda con debounce, gestión de estado del autocomplete
-- `useCatalogs` - Carga automática de catálogos cuando cambia el proyecto
-- `useRecordsSearch` - Búsqueda paginada, gestión de página y resultados
-- `useRecordDetails` - Gestión del modal, cache de detalles, carga de datos
 
-### Capa de Servicios (API)
+- **`useProjectAutocomplete`** - Búsqueda con debounce (300ms), gestión de estado del autocomplete, eliminación de duplicados
+- **`useCatalogs`** - Carga automática de catálogos cuando cambia el proyecto (zonas, categorías y períodos en paralelo)
+- **`useRecordsSearch`** - Búsqueda paginada (5 por página), gestión de página y resultados, búsqueda automática al cambiar página, soporte para filtros múltiples (zona, categoría, período)
+- **`useRecordDetails`** - Gestión del modal, cache de detalles (Map), carga de datos desde API
+
+### Capa de Servicios (API Functions)
 **Ubicación:** `src/lib/api/`
 
 Funciones que abstraen las llamadas a la API:
-- `projects.api.ts` - `searchProjects(query)`
-- `catalogs.api.ts` - `getZones(project)`, `getCategories(project)`
-- `records.api.ts` - `searchRecords(params)`, `getRecordDetails(id)`
+
+- **`projects.api.ts`** - `searchProjects(query: string)` - Búsqueda por prefijo
+- **`catalogs.api.ts`** - `getZones(project: string)`, `getCategories(project: string)`, `getPeriods(project: string)` - Catálogos dinámicos
+- **`records.api.ts`** - `searchRecords(params)`, `getRecordDetails(id: number)` - Registros y detalles (soporta filtros: zone, category, period)
 
 ### Capa de Backend (API Routes)
 **Ubicación:** `app/api/`
 
 Endpoints REST que procesan requests y consultan la base de datos:
-- `/api/projects` - Búsqueda por prefijo (máx 50 únicos)
-- `/api/zones` - Catálogo de zonas por proyecto
-- `/api/categories` - Catálogo de categorías por proyecto
-- `/api/records` - Resultados filtrados y paginados (5 por página)
-- `/api/records/[id]` - Detalles completos de un registro
+
+- **`/api/projects`** - Búsqueda por prefijo (máx 50 únicos, sin duplicados)
+- **`/api/zones`** - Catálogo de zonas únicas por proyecto (ordenadas A-Z)
+- **`/api/categories`** - Catálogo de categorías únicas por proyecto (ordenadas A-Z)
+- **`/api/periods`** - Catálogo de períodos únicos por proyecto (ordenados A-Z)
+- **`/api/records`** - Resultados filtrados y paginados (5 por página, campos: id, proyecto, categoria, zona, periodo, filtros: zone, category, period)
+- **`/api/records/[id]`** - Detalles completos de un registro (todos los campos)
 
 ### Capa de Datos
 **Ubicación:** `prisma/`, `src/lib/prisma.ts`
 
-- `schema.prisma` - Definición de modelos (36 modelos desde MySQL)
-- `prisma.ts` - Singleton de PrismaClient
-- `generated/prisma/` - Cliente generado por Prisma
+- **`schema.prisma`** - Definición de modelos (36 modelos importados desde MySQL)
+- **`prisma.ts`** - Singleton de PrismaClient (previene múltiples instancias en desarrollo)
+- **`generated/prisma/`** - Cliente generado por Prisma
 
 ### Capa de Tipos
 **Ubicación:** `src/types/`
 
-- `domain.ts` - Tipos del dominio de negocio (Project, RecordDetails, etc.)
-- `api.ts` - Tipos de respuestas de la API
+- **`domain.ts`** - Tipos del dominio de negocio:
+  - `Project` - { id, proyecto, categoria, zona, periodo }
+  - `SelectedProject` - { proyecto, categoria, zona }
+  - `RecordDetails` - Todos los campos de housing_universe
+- **`api.ts`** - Tipos de respuestas de la API:
+  - `ProjectsResponse`, `ZonesResponse`, `CategoriesResponse`, `PeriodsResponse`
+  - `RecordsResponse`, `DetailsResponse`
 
 ---
 
@@ -222,11 +241,11 @@ page.tsx
   ↓ (usa hook)
 useProjectAutocomplete
   ↓ (llama API)
-projects.api.ts
+projects.api.ts.searchProjects()
   ↓ (fetch)
 GET /api/projects?q=...
   ↓ (consulta DB)
-Prisma → MySQL
+Prisma.housing_universe.findMany({ startsWith })
   ↓ (respuesta)
 projects.api.ts → useProjectAutocomplete → page.tsx → ProjectAutocomplete
 ```
@@ -240,13 +259,15 @@ useCatalogs
   ↓ (llama APIs en paralelo)
 Promise.all([
   catalogs.api.ts.getZones(),
-  catalogs.api.ts.getCategories()
+  catalogs.api.ts.getCategories(),
+  catalogs.api.ts.getPeriods()
 ])
   ↓ (fetch paralelo)
 GET /api/zones?project=...
 GET /api/categories?project=...
+GET /api/periods?project=...
   ↓ (consulta DB)
-Prisma → MySQL
+Prisma.housing_universe.findMany({ distinct })
   ↓ (respuesta)
 useCatalogs → page.tsx → FiltersBar
 ```
@@ -260,10 +281,11 @@ useRecordsSearch.handleSearch()
   ↓ (llama API)
 records.api.ts.searchRecords()
   ↓ (fetch)
-GET /api/records?project=...&zone=...&category=...&page=1&pageSize=5
+GET /api/records?project=...&zone=...&category=...&period=...&page=1&pageSize=5
   ↓ (consulta DB con paginación)
-Prisma.findMany({ skip, take })
-  ↓ (respuesta)
+Prisma.housing_universe.count({ where })
+Prisma.housing_universe.findMany({ skip, take })
+  ↓ (respuesta con: id, proyecto, categoria, zona, periodo)
 records.api.ts → useRecordsSearch → page.tsx → ResultsList → ResultItem
 ```
 
@@ -296,7 +318,7 @@ detailsCache.has(id) ?
         ↓ (fetch)
         GET /api/records/[id]
         ↓ (consulta DB)
-        Prisma.findUnique({ where: { id } })
+        Prisma.housing_universe.findUnique({ where: { id } })
         ↓ (guarda en cache)
         detailsCache.set(id, data)
   ↓ (muestra modal)
@@ -327,6 +349,7 @@ DetailsModal
                             ▼
         ┌───────────────────────────────────┐
         │   GET /api/projects?q=...         │
+        │   (Máx 50 proyectos únicos)      │
         └───────────────────────────────────┘
                             │
                             ▼
@@ -344,12 +367,14 @@ DetailsModal
         ┌───────────────────────────────────┐
         │   GET /api/zones?project=...      │
         │   GET /api/categories?project=... │
+        │   GET /api/periods?project=...    │
         └───────────────────────────────────┘
                             │
                             ▼
         ┌───────────────────────────────────┐
         │   FiltersBar                      │
-        │   (Usuario selecciona filtros)    │
+        │   (Usuario selecciona filtros:   │
+        │    zona, categoría, período)     │
         └───────────────────────────────────┘
                             │
                             ▼
@@ -364,14 +389,22 @@ DetailsModal
                             │
                             ▼
         ┌───────────────────────────────────┐
-        │   GET /api/records?...&page=1     │
-        │   &pageSize=5                     │
+        │   GET /api/records?...&zone=...    │
+        │   &category=...&period=...         │
+        │   &page=1&pageSize=5                │
         └───────────────────────────────────┘
                             │
                             ▼
         ┌───────────────────────────────────┐
         │   ResultsList                     │
-        │   (Muestra 5 resultados)         │
+        │   (Muestra 5 resultados)          │
+        └───────────────────────────────────┘
+                            │
+                            ▼
+        ┌───────────────────────────────────┐
+        │   ResultItem                      │
+        │   (proyecto, categoría, zona,     │
+        │    período)                       │
         └───────────────────────────────────┘
                             │
                             ▼
@@ -427,9 +460,21 @@ DetailsModal
 
 ### Performance
 - Debounce en búsqueda (300ms)
-- Cache de detalles (Map)
+- Cache de detalles (Map<id, details>)
 - Paginación (5 items por página)
 - Lazy loading de catálogos
+- Búsqueda automática al cambiar página (solo si ya se buscó)
+
+---
+
+## 📝 Campos de Resultados
+
+Cada resultado en la lista muestra:
+- **ID**: Identificador único del registro
+- **Proyecto**: Nombre del proyecto
+- **Categoría**: Categoría del registro
+- **Zona**: Zona del registro (puede ser null)
+- **Período**: Período del registro
 
 ---
 

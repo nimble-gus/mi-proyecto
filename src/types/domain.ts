@@ -5,6 +5,8 @@ export interface Project {
   proyecto: string;
   categoria: string;
   zona: string | null;
+  periodo: string;
+  total_unidades: number | null;
 }
 
 export interface SelectedProject {

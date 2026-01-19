@@ -5,7 +5,8 @@ import { searchRecords, SearchRecordsParams } from "@/src/lib/api/records.api";
 export function useRecordsSearch(
   selectedProject: SelectedProject | null,
   selectedZone: string,
-  selectedCategory: string
+  selectedCategory: string,
+  selectedPeriod: string
 ) {
   const [items, setItems] = useState<Project[]>([]);
   const [page, setPage] = useState<number>(1);
@@ -42,6 +43,10 @@ export function useRecordsSearch(
         params.category = selectedCategory;
       }
 
+      if (selectedPeriod) {
+        params.period = selectedPeriod;
+      }
+
       const data = await searchRecords(params);
 
       setItems(data.items || []);
@@ -57,7 +62,7 @@ export function useRecordsSearch(
     } finally {
       setLoadingResults(false);
     }
-  }, [selectedProject, selectedZone, selectedCategory, page, pageSize]);
+  }, [selectedProject, selectedZone, selectedCategory, selectedPeriod, page, pageSize]);
 
   // Función para cambiar de página y ejecutar búsqueda automáticamente si ya se buscó antes
   const setPageAndSearch = useCallback((newPage: number) => {

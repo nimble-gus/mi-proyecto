@@ -14,6 +14,10 @@ export interface CategoriesResponse {
   categories: string[];
 }
 
+export interface PeriodsResponse {
+  periods: string[];
+}
+
 export interface RecordsResponse {
   items: Project[];
   page: number;

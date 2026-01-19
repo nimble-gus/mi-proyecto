@@ -20,13 +20,15 @@ export async function GET(request: NextRequest) {
 
     const project = projectParam.trim();
 
-    // zone y category solo se aplican si vienen (verificar que no sean strings vacíos)
+    // zone, category y period solo se aplican si vienen (verificar que no sean strings vacíos)
     // URLSearchParams ya decodifica automáticamente
     const zoneParam = searchParams.get("zone");
     const categoryParam = searchParams.get("category");
+    const periodParam = searchParams.get("period");
     
     const zone = zoneParam && zoneParam.trim() ? zoneParam.trim() : null;
     const category = categoryParam && categoryParam.trim() ? categoryParam.trim() : null;
+    const period = periodParam && periodParam.trim() ? periodParam.trim() : null;
 
     // page y pageSize tienen valores por defecto seguros
     const pageParam = searchParams.get("page");
@@ -69,6 +71,11 @@ export async function GET(request: NextRequest) {
       where.categoria = category;
     }
 
+    // Agregar filtro por period solo si se envía
+    if (period) {
+      where.periodo = period;
+    }
+
     // Debug: Log para verificar filtros (remover en producción)
     console.log("Filtros aplicados:", JSON.stringify(where, null, 2));
 
@@ -90,6 +97,8 @@ export async function GET(request: NextRequest) {
         proyecto: true,
         categoria: true,
         zona: true,
+        periodo: true, // Período del registro
+        total_unidades: true, // Total de unidades del proyecto
         // Agregar más campos según necesidad futura
       },
       skip: skip, // Siempre incluir skip, incluso si es 0

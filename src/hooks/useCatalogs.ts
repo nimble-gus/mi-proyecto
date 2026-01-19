@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { SelectedProject } from "@/src/types/domain";
-import { getZones, getCategories } from "@/src/lib/api/catalogs.api";
+import { getZones, getCategories, getPeriods } from "@/src/lib/api/catalogs.api";
 
 export function useCatalogs(selectedProject: SelectedProject | null) {
   const [zones, setZones] = useState<string[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
+  const [periods, setPeriods] = useState<string[]>([]);
   const [loadingCatalogues, setLoadingCatalogues] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -12,6 +13,7 @@ export function useCatalogs(selectedProject: SelectedProject | null) {
     if (!selectedProject) {
       setZones([]);
       setCategories([]);
+      setPeriods([]);
       setError(null);
       return;
     }
@@ -21,17 +23,20 @@ export function useCatalogs(selectedProject: SelectedProject | null) {
       setError(null);
 
       try {
-        const [zonesResponse, categoriesResponse] = await Promise.all([
+        const [zonesResponse, categoriesResponse, periodsResponse] = await Promise.all([
           getZones(selectedProject.proyecto),
           getCategories(selectedProject.proyecto),
+          getPeriods(selectedProject.proyecto),
         ]);
 
         setZones(zonesResponse.zones || []);
         setCategories(categoriesResponse.categories || []);
+        setPeriods(periodsResponse.periods || []);
       } catch (err) {
-        setError("Error al cargar zonas y categorías. Por favor, intenta nuevamente.");
+        setError("Error al cargar zonas, categorías y períodos. Por favor, intenta nuevamente.");
         setZones([]);
         setCategories([]);
+        setPeriods([]);
       } finally {
         setLoadingCatalogues(false);
       }
@@ -43,6 +48,7 @@ export function useCatalogs(selectedProject: SelectedProject | null) {
   return {
     zones,
     categories,
+    periods,
     loadingCatalogues,
     error,
   };
