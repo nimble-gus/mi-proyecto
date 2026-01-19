@@ -71,7 +71,7 @@ La aplicación implementa un sistema completo de filtrado que permite:
 
 #### Respuesta
 
-La API devuelve un array de hasta 30 proyectos que coinciden con el prefijo. Cada proyecto contiene los siguientes campos desde la tabla `housing_universe`:
+La API devuelve un array de hasta 50 proyectos únicos que coinciden con el prefijo. Cada proyecto contiene los siguientes campos desde la tabla `housing_universe`:
 
 ```json
 {
@@ -89,9 +89,10 @@ La API devuelve un array de hasta 30 proyectos que coinciden con el prefijo. Cad
 - Búsqueda por prefijo (`startsWith`) en el campo `proyecto`
 - Si `q` tiene 1 letra (ej. "a") → busca nombres que empiecen con esa letra
 - Si `q` tiene más letras (ej. "al") → busca nombres que empiecen con ese prefijo
-- Máximo 30 resultados ordenados alfabéticamente
+- **Máximo 50 resultados únicos** ordenados alfabéticamente
+- **Elimina duplicados**: Si hay varios registros con el mismo nombre de proyecto, solo aparece uno
 - Si `q` está vacío o no se proporciona, retorna `{ projects: [] }`
-- Validación de longitud máxima (50 caracteres)
+- Validación de longitud máxima (200 caracteres)
 
 #### 2. Catálogo de Zonas
 
@@ -291,7 +292,8 @@ El archivo `lib/prisma.ts` exporta una instancia singleton de PrismaClient para 
 **Archivo:** `app/api/projects/route.ts`
 
 - Búsqueda por prefijo en el campo `proyecto` (autocomplete)
-- Máximo 30 resultados ordenados alfabéticamente
+- **Máximo 50 resultados únicos** ordenados alfabéticamente
+- **Elimina duplicados**: Si hay varios registros con el mismo nombre, solo devuelve uno
 - Validación de longitud (200 caracteres máximo)
 
 #### 2. `/api/zones` - Catálogo de Zonas
@@ -330,14 +332,17 @@ El archivo `lib/prisma.ts` exporta una instancia singleton de PrismaClient para 
 
 **Funcionalidades:**
 1. ✅ Selector de proyecto con autocomplete (debounce 300ms)
+   - Muestra hasta 50 proyectos únicos (sin duplicados)
 2. ✅ Carga automática de catálogos al seleccionar proyecto
+   - Zonas y categorías se cargan automáticamente
 3. ✅ Filtros de zona y categoría (deshabilitados hasta cargar)
-4. ✅ Aplicación de filtros con reset automático de página
-5. ✅ Resultados paginados con navegación
-6. ✅ Selector de pageSize (20/50)
-7. ✅ Botón "Limpiar filtros"
-8. ✅ Estados de carga y mensajes informativos
-9. ✅ Manejo de errores completo
+4. ✅ **Botón "Buscar"** para ejecutar búsqueda manualmente
+   - La búsqueda no es automática, requiere clic en el botón
+5. ✅ Visualización de resultados con proyecto, zona y categoría
+6. ✅ Botón "Limpiar filtros" para resetear zona y categoría
+7. ✅ Estados de carga y mensajes informativos
+8. ✅ Manejo de errores completo con mensajes visibles
+9. ⏸️ Paginación temporalmente oculta (pendiente de implementación)
 
 - `npm run dev` - Inicia el servidor de desarrollo
 - `npm run build` - Construye la aplicación para producción
@@ -365,9 +370,10 @@ El archivo `lib/prisma.ts` exporta una instancia singleton de PrismaClient para 
    - Filtros de zona y categoría
    - Resultados paginados con navegación
    - Carga de catálogos dependientes
-9. ✅ Búsqueda por prefijo implementada (máx 30 resultados)
+9. ✅ Búsqueda por prefijo implementada (máx 50 resultados únicos, sin duplicados)
 10. ✅ Filtrado por proyecto, zona y categoría
-11. ✅ Paginación implementada (page, pageSize, totalPages, totalItems)
+11. ✅ Búsqueda manual con botón "Buscar" (no automática)
+12. ✅ Visualización de resultados con proyecto, zona y categoría
 12. ✅ Debounce implementado (300ms) para búsqueda
 13. ✅ Manejo de estados completo (loading, error, resultados vacíos)
 14. ✅ Diseño responsive con Tailwind CSS
@@ -378,10 +384,11 @@ El archivo `lib/prisma.ts` exporta una instancia singleton de PrismaClient para 
 El proyecto está completamente funcional. Puedes:
 - Iniciar el servidor con `npm run dev`
 - Acceder a [http://localhost:3000](http://localhost:3000)
-- **Buscar proyectos** por nombre en tiempo real
-- **Seleccionar un proyecto** para habilitar filtros
-- **Filtrar por zona y categoría** para refinar resultados
-- **Navegar entre páginas** de resultados paginados
+- **Buscar proyectos** por nombre en tiempo real (hasta 50 opciones únicas)
+- **Seleccionar un proyecto** para habilitar filtros y cargar catálogos
+- **Filtrar por zona y categoría** usando los selectores
+- **Hacer clic en "Buscar"** para ejecutar la búsqueda y ver resultados
+- **Visualizar resultados** con información de proyecto, zona y categoría
 
 ## 🧪 Probar la Aplicación
 
@@ -397,9 +404,9 @@ El proyecto está completamente funcional. Puedes:
 3. **Flujo completo de uso:**
    - **Buscar proyecto**: Escribe en el selector, el dropdown se abre automáticamente
    - **Seleccionar proyecto**: Al seleccionar, se cargan automáticamente los catálogos de zonas y categorías
-   - **Filtrar**: Usa los selectores de zona y categoría para refinar los resultados
-   - **Ver resultados**: Los resultados se muestran paginados (20 por defecto)
-   - **Navegar**: Usa los botones Anterior/Siguiente para cambiar de página
+   - **Filtrar (opcional)**: Usa los selectores de zona y categoría para refinar la búsqueda
+   - **Hacer clic en "Buscar"**: Ejecuta la búsqueda con los filtros seleccionados
+   - **Ver resultados**: Los resultados muestran proyecto, categoría y zona de cada registro
    - **Limpiar**: Usa "Limpiar filtros" para resetear zona y categoría, o "Limpiar" para cambiar de proyecto
 
 ### Probar los Endpoints Directamente
