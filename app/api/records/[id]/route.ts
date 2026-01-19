@@ -28,10 +28,33 @@ export async function GET(
       );
     }
 
-    // 2️⃣ Consulta: Obtener 1 registro por su ID
+    // 2️⃣ Consulta: Obtener 1 registro por su ID (solo campos necesarios)
     const record = await prisma.housing_universe.findUnique({
       where: {
         id: id,
+      },
+      select: {
+        proyecto: true,
+        fase: true,
+        torre: true,
+        periodo: true,
+        categoria: true,
+        pais: true,
+        departamento: true,
+        municipio: true,
+        zona: true,
+        desarrollador: true,
+        estado: true,
+        fecha_inicio: true,
+        fecha_entrega: true,
+        total_unidades: true,
+        unidades_disponibles: true,
+        tipo_de_seguridad: true,
+        precio_promedio: true,
+        cuota_promedio: true,
+        ingresos_promedio: true,
+        cantidad_accesos: true,
+        url_imagen: true,
       },
     });
 
@@ -43,9 +66,7 @@ export async function GET(
       );
     }
 
-    // 4️⃣ Respuesta consistente: Devolver todos los campos del registro
-    // Nota: Si en el futuro hay campos sensibles o muy grandes,
-    // se pueden excluir o truncar aquí
+    // 4️⃣ Respuesta consistente: Devolver solo los campos seleccionados
     return NextResponse.json({
       record: record,
     });

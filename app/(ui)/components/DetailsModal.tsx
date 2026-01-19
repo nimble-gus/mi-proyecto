@@ -127,28 +127,8 @@ export function DetailsModal({
                 </h3>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div>
-                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">ID:</span>
-                    <p className="text-black dark:text-zinc-50">{formatValue(details.id)}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Código Proyecto:</span>
-                    <p className="text-black dark:text-zinc-50">{formatValue(details.cod_proyecto)}</p>
-                  </div>
-                  <div>
                     <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Proyecto:</span>
                     <p className="text-black dark:text-zinc-50">{formatValue(details.proyecto)}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Categoría:</span>
-                    <p className="text-black dark:text-zinc-50">{formatValue(details.categoria)}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Estado:</span>
-                    <p className="text-black dark:text-zinc-50">{formatValue(details.estado)}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Uso:</span>
-                    <p className="text-black dark:text-zinc-50">{formatValue(details.uso)}</p>
                   </div>
                   <div>
                     <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Fase:</span>
@@ -163,8 +143,12 @@ export function DetailsModal({
                     <p className="text-black dark:text-zinc-50">{formatValue(details.periodo)}</p>
                   </div>
                   <div>
-                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Mercado:</span>
-                    <p className="text-black dark:text-zinc-50">{formatValue(details.mercado)}</p>
+                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Categoría:</span>
+                    <p className="text-black dark:text-zinc-50">{formatValue(details.categoria)}</p>
+                  </div>
+                  <div>
+                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Estado:</span>
+                    <p className="text-black dark:text-zinc-50">{formatValue(details.estado)}</p>
                   </div>
                 </div>
               </div>
@@ -189,41 +173,6 @@ export function DetailsModal({
                     <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Zona:</span>
                     <p className="text-black dark:text-zinc-50">{formatValue(details.zona)}</p>
                   </div>
-                  <div>
-                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Subzona:</span>
-                    <p className="text-black dark:text-zinc-50">{formatValue(details.subzona)}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Latitud:</span>
-                    <p className="text-black dark:text-zinc-50">{formatValue(details.latitud)}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Longitud:</span>
-                    <p className="text-black dark:text-zinc-50">{formatValue(details.longitud)}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Fechas */}
-              <div className="col-span-full">
-                <h3 className="mb-3 text-lg font-semibold text-black dark:text-zinc-50">Fechas</h3>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <div>
-                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Fecha Recolección:</span>
-                    <p className="text-black dark:text-zinc-50">{formatDate(details.fecha_recoleccion)}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Fecha Inicio:</span>
-                    <p className="text-black dark:text-zinc-50">{formatDate(details.fecha_inicio)}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Fecha Entrega:</span>
-                    <p className="text-black dark:text-zinc-50">{formatDate(details.fecha_entrega)}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Meses de Comercialización:</span>
-                    <p className="text-black dark:text-zinc-50">{formatValue(details.meses_de_comercializacion)}</p>
-                  </div>
                 </div>
               </div>
 
@@ -236,29 +185,32 @@ export function DetailsModal({
                 </div>
               </div>
 
-              {/* Unidades y Área */}
+              {/* Fechas */}
               <div>
-                <h3 className="mb-3 text-lg font-semibold text-black dark:text-zinc-50">Unidades y Área</h3>
+                <h3 className="mb-3 text-lg font-semibold text-black dark:text-zinc-50">Fechas</h3>
+                <div className="grid grid-cols-1 gap-3">
+                  <div>
+                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Fecha Inicio:</span>
+                    <p className="text-black dark:text-zinc-50">{formatDate(details.fecha_inicio)}</p>
+                  </div>
+                  <div>
+                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Fecha Entrega:</span>
+                    <p className="text-black dark:text-zinc-50">{formatDate(details.fecha_entrega)}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Unidades */}
+              <div>
+                <h3 className="mb-3 text-lg font-semibold text-black dark:text-zinc-50">Unidades</h3>
                 <div className="grid grid-cols-1 gap-3">
                   <div>
                     <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Total Unidades:</span>
-                    <p className="text-black dark:text-zinc-50">{formatValue(details.total_unidades)}</p>
+                    <p className="text-black dark:text-zinc-50">{formatValue(details.total_unidades ?? 0)}</p>
                   </div>
                   <div>
                     <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Unidades Disponibles:</span>
-                    <p className="text-black dark:text-zinc-50">{formatValue(details.unidades_disponibles)}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Total m²:</span>
-                    <p className="text-black dark:text-zinc-50">{formatValue(details.total_m2)}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">m² Disponibles:</span>
-                    <p className="text-black dark:text-zinc-50">{formatValue(details.m2_disponibles)}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Tamaño Promedio:</span>
-                    <p className="text-black dark:text-zinc-50">{formatValue(details.tamano_promedio)} m²</p>
+                    <p className="text-black dark:text-zinc-50">{formatValue(details.unidades_disponibles ?? 0)}</p>
                   </div>
                 </div>
               </div>
@@ -272,39 +224,12 @@ export function DetailsModal({
                     <p className="text-black dark:text-zinc-50">{formatValue(details.precio_promedio)}</p>
                   </div>
                   <div>
-                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Precio Promedio m²:</span>
-                    <p className="text-black dark:text-zinc-50">{formatValue(details.precio_prom_m2)}</p>
-                  </div>
-                  <div>
                     <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Cuota Promedio:</span>
                     <p className="text-black dark:text-zinc-50">{formatValue(details.cuota_promedio)}</p>
                   </div>
                   <div>
                     <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Ingresos Promedio:</span>
                     <p className="text-black dark:text-zinc-50">{formatValue(details.ingresos_promedio)}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Precio Parqueo Adicional:</span>
-                    <p className="text-black dark:text-zinc-50">{formatValue(details.precio_parqueo_adicional)}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Parqueos */}
-              <div>
-                <h3 className="mb-3 text-lg font-semibold text-black dark:text-zinc-50">Parqueos</h3>
-                <div className="grid grid-cols-1 gap-3">
-                  <div>
-                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Total Parqueos Proyecto:</span>
-                    <p className="text-black dark:text-zinc-50">{formatValue(details.total_parqueos_proyecto)}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Parqueos Asignados:</span>
-                    <p className="text-black dark:text-zinc-50">{formatValue(details.parqueos_asignados)}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Parqueos Visita:</span>
-                    <p className="text-black dark:text-zinc-50">{formatValue(details.parqueos_visita)}</p>
                   </div>
                 </div>
               </div>
@@ -318,30 +243,10 @@ export function DetailsModal({
                     <p className="text-black dark:text-zinc-50">{formatValue(details.tipo_de_seguridad)}</p>
                   </div>
                   <div>
-                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">MUVI:</span>
-                    <p className="text-black dark:text-zinc-50">{formatValue(details.muvi)}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">FHA:</span>
-                    <p className="text-black dark:text-zinc-50">{formatValue(details.fha)}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">NSE Proyecto:</span>
-                    <p className="text-black dark:text-zinc-50">{formatValue(details.nse_proyecto)}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Showroom:</span>
-                    <p className="text-black dark:text-zinc-50">{formatValue(details.showroom)}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Casa Modelo:</span>
-                    <p className="text-black dark:text-zinc-50">{formatValue(details.casa_modelo)}</p>
-                  </div>
-                  <div>
                     <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Cantidad Accesos:</span>
                     <p className="text-black dark:text-zinc-50">{formatValue(details.cantidad_accesos)}</p>
                   </div>
-                  <div>
+                  <div className="col-span-full">
                     <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">URL Imagen:</span>
                     <p className="break-all text-black dark:text-zinc-50">
                       {details.url_imagen ? (
@@ -357,14 +262,6 @@ export function DetailsModal({
                         "N/A"
                       )}
                     </p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Mig Number:</span>
-                    <p className="text-black dark:text-zinc-50">{formatValue(details.mig_number)}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Creado en:</span>
-                    <p className="text-black dark:text-zinc-50">{formatDate(details.created_at)}</p>
                   </div>
                 </div>
               </div>
