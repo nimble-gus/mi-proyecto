@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { Project, SelectedProject } from "@/src/types/domain";
 import { searchRecords, SearchRecordsParams } from "@/src/lib/api/records.api";
 
@@ -15,15 +15,16 @@ export function useRecordsSearch(
   const [totalItems, setTotalItems] = useState<number>(0);
   const [loadingResults, setLoadingResults] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const hasSearchedRef = useRef<boolean>(false); // Para saber si ya se hizo una búsqueda inicial
+  const isInitialMount = useRef<boolean>(true);
 
-  const handleSearch = useCallback(async (pageToUse?: number) => {
+  const performSearch = useCallback(async (pageToUse: number = 1) => {
     if (!selectedProject) {
-      setError("Por favor, selecciona un proyecto primero");
+      setItems([]);
+      setTotalItems(0);
+      setTotalPages(0);
+      setError(null);
       return;
     }
-
-    const currentPage = pageToUse ?? page;
 
     setLoadingResults(true);
     setError(null);
@@ -31,7 +32,7 @@ export function useRecordsSearch(
     try {
       const params: SearchRecordsParams = {
         project: selectedProject.proyecto,
-        page: currentPage,
+        page: pageToUse,
         pageSize,
       };
 
@@ -54,35 +55,61 @@ export function useRecordsSearch(
       setPageSize(data.pageSize);
       setTotalItems(data.totalItems || 0);
       setTotalPages(data.totalPages || 0);
-      hasSearchedRef.current = true; // Marcar que ya se hizo una búsqueda
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Error al obtener registros. Por favor, intenta nuevamente.";
       setError(errorMessage);
       setItems([]);
+      setTotalItems(0);
+      setTotalPages(0);
     } finally {
       setLoadingResults(false);
     }
-  }, [selectedProject, selectedZone, selectedCategory, selectedPeriod, page, pageSize]);
+  }, [selectedProject, selectedZone, selectedCategory, selectedPeriod, pageSize]);
 
-  // Función para cambiar de página y ejecutar búsqueda automáticamente si ya se buscó antes
-  const setPageAndSearch = useCallback((newPage: number) => {
-    setPage(newPage);
-    // Si ya se hizo una búsqueda inicial, ejecutar automáticamente al cambiar de página
-    if (hasSearchedRef.current && selectedProject) {
-      handleSearch(newPage);
+  // Búsqueda automática cuando cambia el proyecto o los filtros
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
     }
-  }, [selectedProject, handleSearch]);
+
+    if (selectedProject) {
+      // Resetear página a 1 cuando cambian filtros o proyecto
+      setPage(1);
+      performSearch(1);
+    } else {
+      // Limpiar resultados si no hay proyecto
+      setItems([]);
+      setTotalItems(0);
+      setTotalPages(0);
+      setError(null);
+    }
+  }, [selectedProject, selectedZone, selectedCategory, selectedPeriod, performSearch]);
+
+  // Función para cambiar de página (búsqueda automática)
+  const setPageAndSearch = useCallback((newPage: number) => {
+    if (!selectedProject) return;
+    setPage(newPage);
+    performSearch(newPage);
+  }, [selectedProject, performSearch]);
+
+  // Función manual para refrescar (opcional)
+  const refresh = useCallback(() => {
+    if (selectedProject) {
+      performSearch(page);
+    }
+  }, [selectedProject, page, performSearch]);
 
   return {
     items,
     page,
-    setPage: setPageAndSearch, // Usar la función que ejecuta búsqueda automática
+    setPage: setPageAndSearch,
     pageSize,
     setPageSize,
     totalPages,
     totalItems,
     loadingResults,
     error,
-    handleSearch,
+    refresh,
   };
 }

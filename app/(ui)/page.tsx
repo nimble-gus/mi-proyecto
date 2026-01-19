@@ -26,7 +26,7 @@ export default function Home() {
   // Hook de catálogos (se cargan automáticamente cuando hay proyecto seleccionado)
   const catalogs = useCatalogs(selectedProject);
 
-  // Hook de búsqueda de resultados
+  // Hook de búsqueda de resultados (búsqueda automática)
   const recordsSearch = useRecordsSearch(selectedProject, selectedZone, selectedCategory, selectedPeriod);
 
   // Hook de detalles del modal
@@ -37,11 +37,11 @@ export default function Home() {
     setSelectedProject(project);
     autocomplete.setIsOpen(false);
     autocomplete.setQuery("");
-    recordsSearch.setPage(1);
+    // Limpiar filtros al seleccionar nuevo proyecto
     setSelectedZone("");
     setSelectedCategory("");
     setSelectedPeriod("");
-  }, [autocomplete, recordsSearch]);
+  }, [autocomplete]);
 
   const handleClearProject = useCallback(() => {
     setSelectedProject(null);
@@ -50,122 +50,114 @@ export default function Home() {
     setSelectedZone("");
     setSelectedCategory("");
     setSelectedPeriod("");
-    recordsSearch.setPage(1);
-  }, [autocomplete, recordsSearch]);
+  }, [autocomplete]);
 
   const handleZoneChange = useCallback((zone: string) => {
     setSelectedZone(zone);
-    recordsSearch.setPage(1);
-  }, [recordsSearch]);
+    // La búsqueda se ejecuta automáticamente en useRecordsSearch
+  }, []);
 
   const handleCategoryChange = useCallback((category: string) => {
     setSelectedCategory(category);
-    recordsSearch.setPage(1);
-  }, [recordsSearch]);
+    // La búsqueda se ejecuta automáticamente en useRecordsSearch
+  }, []);
 
   const handlePeriodChange = useCallback((period: string) => {
     setSelectedPeriod(period);
-    recordsSearch.setPage(1);
-  }, [recordsSearch]);
+    // La búsqueda se ejecuta automáticamente en useRecordsSearch
+  }, []);
 
   const handleClearFilters = useCallback(() => {
     setSelectedZone("");
     setSelectedCategory("");
     setSelectedPeriod("");
-    recordsSearch.setPage(1);
-  }, [recordsSearch]);
+    // La búsqueda se ejecuta automáticamente en useRecordsSearch
+  }, []);
 
   return (
-    <div className="flex min-h-screen items-start justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex w-full max-w-2xl flex-col gap-8 py-16 px-4 sm:px-8">
+    <div className="flex min-h-screen flex-col bg-zinc-50 font-sans lg:flex-row dark:bg-black">
+      {/* Sidebar de Filtros - Mobile: arriba, Desktop: izquierda */}
+      <aside className="w-full border-b border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900 lg:sticky lg:top-0 lg:h-screen lg:w-80 lg:border-b-0 lg:border-r lg:overflow-y-auto">
+        <FiltersBar
+          zones={catalogs.zones}
+          categories={catalogs.categories}
+          periods={catalogs.periods}
+          loadingCatalogues={catalogs.loadingCatalogues}
+          selectedZone={selectedZone}
+          setSelectedZone={handleZoneChange}
+          selectedCategory={selectedCategory}
+          setSelectedCategory={handleCategoryChange}
+          selectedPeriod={selectedPeriod}
+          setSelectedPeriod={handlePeriodChange}
+          onClearFilters={handleClearFilters}
+          hasSelectedProject={!!selectedProject}
+        />
+      </aside>
+
+      {/* Área Principal */}
+      <main className="flex flex-1 flex-col gap-6 p-4 lg:p-8">
+        {/* Header */}
         <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-semibold text-black dark:text-zinc-50">
+          <h1 className="text-2xl font-semibold text-black dark:text-zinc-50 lg:text-3xl">
             Filtrado de Proyectos
           </h1>
-          <p className="text-zinc-600 dark:text-zinc-400">
-            Selecciona un proyecto y filtra sus registros por zona, categoría y período.
+          <p className="text-sm text-zinc-600 dark:text-zinc-400 lg:text-base">
+            Selecciona un proyecto para ver resultados filtrados
           </p>
         </div>
 
-        {/* Selector de proyecto */}
-        <ProjectAutocomplete
-          query={autocomplete.query}
-          setQuery={autocomplete.setQuery}
-          options={autocomplete.options}
-          isOpen={autocomplete.isOpen}
-          setIsOpen={autocomplete.setIsOpen}
-          loading={autocomplete.loading}
-          error={autocomplete.error}
-          selectedProject={selectedProject}
-          getDisplayText={autocomplete.getDisplayText}
-          onSelect={handleSelectProject}
-          onClear={handleClearProject}
-        />
-
-        {/* Mensaje si no hay proyecto seleccionado */}
-        {!selectedProject && (
-          <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-6 text-center dark:border-zinc-700 dark:bg-zinc-800">
-            <p className="text-zinc-600 dark:text-zinc-400">
-              Selecciona un proyecto para ver filtros y resultados
-            </p>
-          </div>
-        )}
-
-        {/* Filtros y botón buscar */}
-        {selectedProject && (
-          <>
-            <FiltersBar
-              zones={catalogs.zones}
-              categories={catalogs.categories}
-              periods={catalogs.periods}
-              loadingCatalogues={catalogs.loadingCatalogues}
-              selectedZone={selectedZone}
-              setSelectedZone={handleZoneChange}
-              selectedCategory={selectedCategory}
-              setSelectedCategory={handleCategoryChange}
-              selectedPeriod={selectedPeriod}
-              setSelectedPeriod={handlePeriodChange}
-              onClearFilters={handleClearFilters}
-            />
-
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => recordsSearch.handleSearch()}
-                disabled={recordsSearch.loadingResults}
-                className="rounded-lg bg-zinc-900 px-6 py-3 text-base font-medium text-white transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-50 dark:text-black dark:hover:bg-zinc-200"
-              >
-                {recordsSearch.loadingResults ? "Buscando..." : "Buscar"}
-              </button>
-            </div>
-          </>
-        )}
-
-        {/* Resultados */}
-        {selectedProject && (
-          <ResultsList
-            items={recordsSearch.items}
-            loadingResults={recordsSearch.loadingResults}
-            error={recordsSearch.error}
-            totalItems={recordsSearch.totalItems}
-            page={recordsSearch.page}
-            totalPages={recordsSearch.totalPages}
-            pageSize={recordsSearch.pageSize}
-            onOpenDetails={recordDetails.openDetails}
-            onPreviousPage={() => recordsSearch.setPage(Math.max(1, recordsSearch.page - 1))}
-            onNextPage={() => recordsSearch.setPage(Math.min(recordsSearch.totalPages, recordsSearch.page + 1))}
+        {/* Selector de Proyecto */}
+        <div className="flex flex-col gap-4">
+          <ProjectAutocomplete
+            query={autocomplete.query}
+            setQuery={autocomplete.setQuery}
+            options={autocomplete.options}
+            isOpen={autocomplete.isOpen}
+            setIsOpen={autocomplete.setIsOpen}
+            loading={autocomplete.loading}
+            error={autocomplete.error}
+            selectedProject={selectedProject}
+            getDisplayText={autocomplete.getDisplayText}
+            onSelect={handleSelectProject}
+            onClear={handleClearProject}
           />
-        )}
+        </div>
 
-        {/* Modal de detalles */}
-        <DetailsModal
-          isOpen={recordDetails.isModalOpen}
-          onClose={recordDetails.closeModal}
-          details={recordDetails.details}
-          loadingDetails={recordDetails.loadingDetails}
-          errorDetails={recordDetails.errorDetails}
-        />
+        {/* Área de Resultados */}
+        <div className="flex flex-1 flex-col gap-4">
+          {!selectedProject && (
+            <div className="flex flex-1 items-center justify-center rounded-lg border border-zinc-200 bg-white p-12 text-center dark:border-zinc-700 dark:bg-zinc-900">
+              <p className="text-zinc-600 dark:text-zinc-400">
+                Selecciona un proyecto para ver resultados
+              </p>
+            </div>
+          )}
+
+          {selectedProject && (
+            <ResultsList
+              items={recordsSearch.items}
+              loadingResults={recordsSearch.loadingResults}
+              error={recordsSearch.error}
+              totalItems={recordsSearch.totalItems}
+              page={recordsSearch.page}
+              totalPages={recordsSearch.totalPages}
+              pageSize={recordsSearch.pageSize}
+              onOpenDetails={recordDetails.openDetails}
+              onPreviousPage={() => recordsSearch.setPage(Math.max(1, recordsSearch.page - 1))}
+              onNextPage={() => recordsSearch.setPage(Math.min(recordsSearch.totalPages, recordsSearch.page + 1))}
+            />
+          )}
+        </div>
       </main>
+
+      {/* Modal de detalles */}
+      <DetailsModal
+        isOpen={recordDetails.isModalOpen}
+        onClose={recordDetails.closeModal}
+        details={recordDetails.details}
+        loadingDetails={recordDetails.loadingDetails}
+        errorDetails={recordDetails.errorDetails}
+      />
     </div>
   );
 }
