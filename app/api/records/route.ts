@@ -32,14 +32,24 @@ export async function GET(request: NextRequest) {
     const pageParam = searchParams.get("page");
     const pageSizeParam = searchParams.get("pageSize");
 
-    // page >= 1
-    const page = pageParam ? Math.max(1, parseInt(pageParam, 10)) : 1;
+    // Validar y parsear page (asegurar que sea un número válido)
+    let page = 1;
+    if (pageParam) {
+      const parsedPage = parseInt(pageParam, 10);
+      if (!isNaN(parsedPage) && parsedPage > 0) {
+        page = parsedPage;
+      }
+    }
     
-    // pageSize dentro de límites (default 20, max 50)
+    // pageSize dentro de límites (default 5, max 50)
     const maxPageSize = 50;
-    const pageSize = pageSizeParam
-      ? Math.min(maxPageSize, Math.max(1, parseInt(pageSizeParam, 10)))
-      : 20; // Valor por defecto: 20
+    let pageSize = 5; // Valor por defecto: 5 proyectos por página
+    if (pageSizeParam) {
+      const parsedPageSize = parseInt(pageSizeParam, 10);
+      if (!isNaN(parsedPageSize) && parsedPageSize > 0) {
+        pageSize = Math.min(maxPageSize, parsedPageSize);
+      }
+    }
     
     const finalPageSize = Math.min(pageSize, maxPageSize);
 
@@ -82,7 +92,7 @@ export async function GET(request: NextRequest) {
         zona: true,
         // Agregar más campos según necesidad futura
       },
-      skip,
+      skip: skip, // Siempre incluir skip, incluso si es 0
       take: finalPageSize,
       orderBy: [
         {

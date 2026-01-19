@@ -9,10 +9,35 @@ export interface SearchRecordsParams {
 }
 
 export async function searchRecords(params: SearchRecordsParams): Promise<RecordsResponse> {
+  // Asegurar que page y pageSize sean números válidos
+  let page = 1;
+  if (params.page !== undefined && params.page !== null) {
+    if (typeof params.page === 'number' && !isNaN(params.page)) {
+      page = Math.max(1, params.page);
+    } else {
+      const parsed = parseInt(String(params.page), 10);
+      if (!isNaN(parsed) && parsed > 0) {
+        page = parsed;
+      }
+    }
+  }
+
+  let pageSize = 5; // Valor por defecto: 5 proyectos por página
+  if (params.pageSize !== undefined && params.pageSize !== null) {
+    if (typeof params.pageSize === 'number' && !isNaN(params.pageSize)) {
+      pageSize = Math.max(1, Math.min(50, params.pageSize));
+    } else {
+      const parsed = parseInt(String(params.pageSize), 10);
+      if (!isNaN(parsed) && parsed > 0) {
+        pageSize = Math.min(50, parsed);
+      }
+    }
+  }
+  
   const searchParams = new URLSearchParams({
     project: params.project,
-    page: (params.page || 1).toString(),
-    pageSize: (params.pageSize || 20).toString(),
+    page: page.toString(),
+    pageSize: pageSize.toString(),
   });
 
   if (params.zone) {

@@ -136,7 +136,12 @@ export default function Home() {
             loadingResults={recordsSearch.loadingResults}
             error={recordsSearch.error}
             totalItems={recordsSearch.totalItems}
+            page={recordsSearch.page}
+            totalPages={recordsSearch.totalPages}
+            pageSize={recordsSearch.pageSize}
             onOpenDetails={recordDetails.openDetails}
+            onPreviousPage={() => recordsSearch.setPage(Math.max(1, recordsSearch.page - 1))}
+            onNextPage={() => recordsSearch.setPage(Math.min(recordsSearch.totalPages, recordsSearch.page + 1))}
           />
         )}
 

@@ -1,713 +1,436 @@
 # Mi Proyecto - Filtrado de Proyectos
 
-Aplicación fullstack desarrollada con Next.js y TypeScript que permite seleccionar proyectos, filtrar por zona y categoría, y visualizar resultados paginados. El sistema implementa un flujo completo de filtrado optimizado para grandes volúmenes de datos.
+Aplicación fullstack desarrollada con Next.js y TypeScript que permite seleccionar proyectos, filtrar por zona y categoría, y visualizar resultados paginados con detalles completos.
 
 ## 🛠️ Stack Tecnológico
 
-### Frontend & Backend
 - **Next.js 16.1.2** - Framework React con App Router
 - **TypeScript** - Tipado estático para frontend y backend
 - **React 19.2.3** - Biblioteca para la interfaz de usuario
 - **TailwindCSS** - Framework de CSS utility-first
-
-### Base de Datos
 - **Prisma 6.19.2** - ORM para TypeScript/Node.js
 - **MySQL** - Sistema de gestión de base de datos relacional
-- **DBeaver** - Herramienta de administración de base de datos
 
-## 📁 Estructura del Proyecto
+---
+
+## 📁 Arquitectura del Proyecto
 
 ```
 mi-proyecto/
 ├── app/
 │   ├── (ui)/
-│   │   └── page.tsx          # Frontend (filtrado completo) ✅
+│   │   ├── page.tsx                    # Componente principal (composición)
+│   │   └── components/
+│   │       ├── ProjectAutocomplete.tsx # Selector de proyecto con autocomplete
+│   │       ├── FiltersBar.tsx          # Filtros de zona y categoría
+│   │       ├── ResultsList.tsx         # Lista de resultados paginados
+│   │       ├── ResultItem.tsx          # Item individual de resultado
+│   │       ├── DetailsModal.tsx        # Modal con detalles completos
+│   │       └── Pagination.tsx          # Componente de paginación
 │   ├── api/
 │   │   ├── projects/
-│   │   │   └── route.ts      # GET /api/projects - Búsqueda por prefijo ✅
+│   │   │   └── route.ts                # GET /api/projects - Búsqueda por prefijo
 │   │   ├── zones/
-│   │   │   └── route.ts      # GET /api/zones - Catálogo de zonas ✅
+│   │   │   └── route.ts                # GET /api/zones - Catálogo de zonas
 │   │   ├── categories/
-│   │   │   └── route.ts      # GET /api/categories - Catálogo categorías ✅
+│   │   │   └── route.ts                # GET /api/categories - Catálogo categorías
 │   │   └── records/
-│   │       └── route.ts      # GET /api/records - Resultados paginados ✅
+│   │       ├── route.ts                # GET /api/records - Resultados paginados
+│   │       └── [id]/
+│   │           └── route.ts            # GET /api/records/[id] - Detalles completos
 │   ├── layout.tsx
-│   ├── globals.css
-│   └── favicon.ico
+│   └── globals.css
 ├── src/
+│   ├── hooks/
+│   │   ├── useProjectAutocomplete.ts   # Hook: autocomplete + debounce
+│   │   ├── useCatalogs.ts              # Hook: carga de catálogos
+│   │   ├── useRecordsSearch.ts        # Hook: búsqueda paginada
+│   │   └── useRecordDetails.ts        # Hook: modal + cache
 │   ├── lib/
-│   │   └── prisma.ts         # PrismaClient singleton ✅
-│   ├── services/             # Lógica de negocio (futuro)
-│   ├── repositories/         # Consultas Prisma (futuro)
-│   ├── validators/           # Validación de datos (futuro)
-│   └── types/                # Tipos y DTOs (futuro)
+│   │   ├── prisma.ts                  # PrismaClient singleton
+│   │   └── api/
+│   │       ├── projects.api.ts         # API: búsqueda de proyectos
+│   │       ├── catalogs.api.ts        # API: zonas y categorías
+│   │       └── records.api.ts         # API: registros y detalles
+│   └── types/
+│       ├── domain.ts                  # Tipos del dominio (Project, RecordDetails)
+│       └── api.ts                     # Tipos de respuestas API
 ├── generated/
-│   └── prisma/               # Cliente de Prisma generado
+│   └── prisma/                        # Cliente de Prisma generado
 ├── prisma/
-│   └── schema.prisma         # Schema de Prisma (36 modelos importados)
-├── .env                      # Variables de entorno
-├── package.json
+│   └── schema.prisma                  # Schema de Prisma (36 modelos)
+├── .env                               # Variables de entorno
 └── README.md
 ```
 
-## 🎯 Funcionalidad Principal
+---
 
-### Sistema de Filtrado de Proyectos
+## 🔄 Flujo de la Aplicación
 
-La aplicación implementa un sistema completo de filtrado que permite:
-1. **Buscar y seleccionar proyectos** mediante autocomplete
-2. **Filtrar por zona y categoría** basado en el proyecto seleccionado
-3. **Visualizar resultados paginados** con navegación entre páginas
-
-### Endpoints API
-
-#### 1. Búsqueda de Proyectos (Autocomplete)
-
-**GET** `/api/projects?q=prefijo`
-
-#### Parámetros de Consulta
-
-- `q` (string, opcional): Término de búsqueda (letra o prefijo) para filtrar por nombre de proyecto
-
-#### Respuesta
-
-La API devuelve un array de hasta 50 proyectos únicos que coinciden con el prefijo. Cada proyecto contiene los siguientes campos desde la tabla `housing_universe`:
-
-```json
-{
-  "projects": [
-    {
-      "proyecto": "Nombre del Proyecto",
-      "categoria": "Categoría",
-      "zona": "Zona"
-    }
-  ]
-}
-```
-
-**Características de la búsqueda:**
-- Búsqueda por prefijo (`startsWith`) en el campo `proyecto`
-- Si `q` tiene 1 letra (ej. "a") → busca nombres que empiecen con esa letra
-- Si `q` tiene más letras (ej. "al") → busca nombres que empiecen con ese prefijo
-- **Máximo 50 resultados únicos** ordenados alfabéticamente
-- **Elimina duplicados**: Si hay varios registros con el mismo nombre de proyecto, solo aparece uno
-- Si `q` está vacío o no se proporciona, retorna `{ projects: [] }`
-- Validación de longitud máxima (200 caracteres)
-
-#### 2. Catálogo de Zonas
-
-**GET** `/api/zones?project=nombre_proyecto`
-
-Devuelve las zonas únicas disponibles para un proyecto específico.
-
-**Parámetros:**
-- `project` (string, obligatorio): Nombre del proyecto
-
-**Respuesta:**
-```json
-{
-  "zones": ["Zona A", "Zona B", "Zona C"]
-}
-```
-
-#### 3. Catálogo de Categorías
-
-**GET** `/api/categories?project=nombre_proyecto`
-
-Devuelve las categorías únicas disponibles para un proyecto específico.
-
-**Parámetros:**
-- `project` (string, obligatorio): Nombre del proyecto
-
-**Respuesta:**
-```json
-{
-  "categories": ["Categoría 1", "Categoría 2"]
-}
-```
-
-#### 4. Resultados Filtrados con Paginación
-
-**GET** `/api/records?project=...&zone=...&category=...&page=...&pageSize=...`
-
-Endpoint principal que devuelve registros filtrados con paginación.
-
-**Parámetros:**
-- `project` (string, obligatorio): Nombre del proyecto
-- `zone` (string, opcional): Zona para filtrar
-- `category` (string, opcional): Categoría para filtrar
-- `page` (number, opcional, default: 1): Número de página
-- `pageSize` (number, opcional, default: 20, max: 50): Items por página
-
-**Respuesta:**
-```json
-{
-  "items": [
-    {
-      "proyecto": "Nombre del Proyecto",
-      "categoria": "Categoría",
-      "zona": "Zona"
-    }
-  ],
-  "page": 1,
-  "pageSize": 20,
-  "totalItems": 150,
-  "totalPages": 8
-}
-```
-
-### Frontend - Flujo de Filtrado Completo
-
-El componente `app/(ui)/page.tsx` implementa un sistema completo de filtrado con las siguientes características:
-
-**Flujo de Usuario:**
-1. **Selector de Proyecto (Autocomplete)**
-   - Búsqueda por letra o prefijo con debounce de 300ms
-   - Selección habilita los filtros de zona y categoría
-
-2. **Carga de Catálogos**
-   - Al seleccionar proyecto, carga automáticamente zonas y categorías disponibles
-   - Dropdowns deshabilitados hasta cargar los catálogos
-
-3. **Aplicación de Filtros**
-   - Selectores de zona y categoría
-   - Cambios en filtros resetean la página a 1
-   - Actualización automática de resultados
-
-4. **Visualización de Resultados**
-   - Resultados paginados mostrados en tarjetas
-   - Paginación con botones Anterior/Siguiente
-   - Indicador "Página X de Y"
-   - Selector de pageSize (20 o 50 items)
-
-5. **UX Mejorada**
-   - Mensajes informativos en cada estado
-   - Loading states claros
-   - Botón "Limpiar filtros"
-   - Diseño responsive y soporte para modo oscuro
-
-**Tecnologías:**
-- React Hooks (`useState`, `useEffect`, `useCallback`, `useRef`)
-- TypeScript con tipos bien definidos
-- Fetch API para comunicación con múltiples endpoints
-- Manejo de estados asíncronos complejos
-
-## 🚀 Configuración e Instalación
-
-### Prerrequisitos
-
-- Node.js 18+ 
-- MySQL instalado y configurado
-- DBeaver (opcional, para gestión de base de datos)
-
-### Instalación
-
-1. Clonar el repositorio (o asegurarse de estar en el directorio del proyecto)
-
-2. Instalar dependencias:
-
-```bash
-npm install
-```
-
-3. Configurar variables de entorno:
-
-Crear un archivo `.env` en la raíz del proyecto con la cadena de conexión a MySQL:
-
-```env
-DATABASE_URL="mysql://usuario:contraseña@host:puerto/nombre_base_datos"
-```
-
-4. Configurar Prisma con MySQL:
-
-El archivo `prisma/schema.prisma` está configurado para usar MySQL:
-
-```prisma
-datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
-}
-```
-
-> **Nota:** Este proyecto usa Prisma v6. En v7 la configuración cambió, por lo que se decidió usar v6 para compatibilidad con `new PrismaClient()` sin adapters.
-
-5. Importar el schema de la base de datos existente:
-
-```bash
-npx prisma db pull
-```
-
-Este comando importa automáticamente todos los modelos y relaciones desde la base de datos MySQL. Se generaron **36 modelos** incluyendo:
-- `Projects` - Modelo principal para búsqueda de proyectos
-- `Applications`, `Categories`, `Departments`, `Units`, etc.
-
-6. Generar el cliente de Prisma:
-
-```bash
-npx prisma generate
-```
-
-Este comando genera el cliente de Prisma en `app/generated/prisma` que se utilizará para realizar consultas a la base de datos.
-
-## ✅ Configuración Completada
-
-- ✅ Conexión a MySQL configurada (`.env` con `DATABASE_URL`)
-- ✅ Prisma v6.19.2 instalado y configurado
-- ✅ Schema de Prisma importado desde la base de datos (36 modelos)
-- ✅ Cliente de Prisma generado en `app/generated/prisma`
-- ✅ Dependencias instaladas (incluyendo `dotenv`)
-- ✅ `lib/prisma.ts` - Singleton de PrismaClient implementado
-- ✅ `app/api/projects/route.ts` - Endpoint GET implementado
-- ✅ `app/page.tsx` - Frontend completo con búsqueda en tiempo real
-
-## 🏃 Ejecutar el Proyecto
-
-### Modo Desarrollo
-
-```bash
-npm run dev
-```
-
-Abrir [http://localhost:3000](http://localhost:3000) en el navegador.
-
-### Modo Producción
-
-```bash
-npm run build
-npm start
-```
-
-## 📝 Desarrollo
-
-### Configuración de Prisma Client
-
-El archivo `lib/prisma.ts` exporta una instancia singleton de PrismaClient para evitar múltiples conexiones en desarrollo con hot-reload de Next.js. El cliente generado se encuentra en `app/generated/prisma`.
-
-**Importante:** Se usa Prisma v6 (no v7) para evitar la necesidad de adapters o accelerateUrl. Con v6, `new PrismaClient()` funciona sin configuración adicional.
-
-### Endpoints Backend Implementados
-
-#### 1. `/api/projects` - Búsqueda por Prefijo
-
-**Archivo:** `app/api/projects/route.ts`
-
-- Búsqueda por prefijo en el campo `proyecto` (autocomplete)
-- **Máximo 50 resultados únicos** ordenados alfabéticamente
-- **Elimina duplicados**: Si hay varios registros con el mismo nombre, solo devuelve uno
-- Validación de longitud (200 caracteres máximo)
-
-#### 2. `/api/zones` - Catálogo de Zonas
-
-**Archivo:** `app/api/zones/route.ts`
-
-- Devuelve zonas únicas filtradas por proyecto
-- Ordenadas alfabéticamente
-- Excluye valores nulos y vacíos
-
-#### 3. `/api/categories` - Catálogo de Categorías
-
-**Archivo:** `app/api/categories/route.ts`
-
-- Devuelve categorías únicas filtradas por proyecto
-- Ordenadas alfabéticamente
-- Excluye valores vacíos
-
-#### 4. `/api/records` - Resultados Filtrados con Paginación
-
-**Archivo:** `app/api/records/route.ts`
-
-- Filtrado por proyecto (obligatorio), zona y categoría (opcionales)
-- Paginación con `page` y `pageSize` (máx 50)
-- Retorna `items`, `page`, `pageSize`, `totalItems`, `totalPages`
-- Orden estable para paginación consistente
-
-#### 5. `/api/records/[id]` - Detalles Completos de un Registro
-
-**Archivo:** `app/api/records/[id]/route.ts`
-
-- Obtiene todos los campos de un registro específico por su ID
-- Validación de ID (debe ser número válido mayor a 0)
-- Retorna `{ record: {...} }` con todos los campos
-- Manejo de errores: 400 (ID inválido), 404 (no encontrado), 500 (error del servidor)
-
-### Frontend - Flujo Completo de Filtrado
-
-**Archivo:** `app/(ui)/page.tsx`
-
-**Estados implementados:**
-- Selección: `selectedProject`, `selectedZone`, `selectedCategory`
-- Catálogos: `zones`, `categories`, `loadingCatalogues`
-- Resultados: `items`, `page`, `pageSize`, `totalPages`, `totalItems`, `loadingResults`
-
-**Funcionalidades:**
-1. ✅ Selector de proyecto con autocomplete (debounce 300ms)
-   - Muestra hasta 50 proyectos únicos (sin duplicados)
-2. ✅ Carga automática de catálogos al seleccionar proyecto
-   - Zonas y categorías se cargan automáticamente
-3. ✅ Filtros de zona y categoría (deshabilitados hasta cargar)
-4. ✅ **Botón "Buscar"** para ejecutar búsqueda manualmente
-   - La búsqueda no es automática, requiere clic en el botón
-5. ✅ Visualización de resultados con proyecto, zona y categoría
-6. ✅ Botón "Limpiar filtros" para resetear zona y categoría
-7. ✅ Estados de carga y mensajes informativos
-8. ✅ Manejo de errores completo con mensajes visibles
-9. ⏸️ Paginación temporalmente oculta (pendiente de implementación)
-
-- `npm run dev` - Inicia el servidor de desarrollo
-- `npm run build` - Construye la aplicación para producción
-- `npm start` - Inicia el servidor de producción
-- `npm run lint` - Ejecuta ESLint
-
-## 📋 Estado del Proyecto
-
-### ✅ Completado - Proyecto Funcional
-
-1. ✅ Estructura del proyecto configurada (Next.js + TypeScript)
-2. ✅ Prisma v6.19.2 instalado y configurado para MySQL
-3. ✅ Conexión a la base de datos establecida
-4. ✅ Schema importado desde MySQL (36 modelos desde `housing_universe`, `Projects`, etc.)
-5. ✅ Cliente de Prisma generado en `generated/prisma`
-6. ✅ `src/lib/prisma.ts` - Singleton de PrismaClient implementado
-7. ✅ **Backend - Endpoints API:**
-   - `app/api/projects/route.ts` - Búsqueda por prefijo (autocomplete)
-   - `app/api/zones/route.ts` - Catálogo de zonas por proyecto
-   - `app/api/categories/route.ts` - Catálogo de categorías por proyecto
-   - `app/api/records/route.ts` - Resultados filtrados con paginación
-   - `app/api/records/[id]/route.ts` - Detalles completos de un registro
-8. ✅ **Frontend - Flujo completo:**
-   - `app/(ui)/page.tsx` - Sistema de filtrado completo
-   - Selector de proyecto con autocomplete
-   - Filtros de zona y categoría
-   - Resultados paginados con navegación
-   - Carga de catálogos dependientes
-9. ✅ Búsqueda por prefijo implementada (máx 50 resultados únicos, sin duplicados)
-10. ✅ Filtrado por proyecto, zona y categoría
-11. ✅ Búsqueda manual con botón "Buscar" (no automática)
-12. ✅ Visualización de resultados con proyecto, zona y categoría
-12. ✅ Debounce implementado (300ms) para búsqueda
-13. ✅ Manejo de estados completo (loading, error, resultados vacíos)
-14. ✅ Diseño responsive con Tailwind CSS
-15. ✅ TypeScript con tipos bien definidos
-
-### 🎉 Proyecto Listo para Usar
-
-El proyecto está completamente funcional. Puedes:
-- Iniciar el servidor con `npm run dev`
-- Acceder a [http://localhost:3000](http://localhost:3000)
-- **Buscar proyectos** por nombre en tiempo real (hasta 50 opciones únicas)
-- **Seleccionar un proyecto** para habilitar filtros y cargar catálogos
-- **Filtrar por zona y categoría** usando los selectores
-- **Hacer clic en "Buscar"** para ejecutar la búsqueda y ver resultados
-- **Visualizar resultados** con información de proyecto, zona y categoría
-
-## 🧪 Probar la Aplicación
-
-### Desde el Navegador (Recomendado)
-
-1. Inicia el servidor:
-   ```bash
-   npm run dev
-   ```
-
-2. Abre [http://localhost:3000](http://localhost:3000) en tu navegador
-
-3. **Flujo completo de uso:**
-   - **Buscar proyecto**: Escribe en el selector, el dropdown se abre automáticamente
-   - **Seleccionar proyecto**: Al seleccionar, se cargan automáticamente los catálogos de zonas y categorías
-   - **Filtrar (opcional)**: Usa los selectores de zona y categoría para refinar la búsqueda
-   - **Hacer clic en "Buscar"**: Ejecuta la búsqueda con los filtros seleccionados
-   - **Ver resultados**: Los resultados muestran proyecto, categoría y zona de cada registro
-   - **Limpiar**: Usa "Limpiar filtros" para resetear zona y categoría, o "Limpiar" para cambiar de proyecto
-
-### Probar los Endpoints Directamente
-
-También puedes probar los endpoints directamente:
-
-```bash
-# 1. Búsqueda de proyectos (autocomplete)
-GET http://localhost:3000/api/projects?q=a
-
-# 2. Catálogo de zonas (requiere proyecto seleccionado)
-GET http://localhost:3000/api/zones?project=NombreProyecto
-
-# 3. Catálogo de categorías (requiere proyecto seleccionado)
-GET http://localhost:3000/api/categories?project=NombreProyecto
-
-# 4. Resultados filtrados con paginación
-GET http://localhost:3000/api/records?project=NombreProyecto
-GET http://localhost:3000/api/records?project=NombreProyecto&zone=ZonaA
-GET http://localhost:3000/api/records?project=NombreProyecto&category=Cat1
-GET http://localhost:3000/api/records?project=NombreProyecto&zone=ZonaA&category=Cat1&page=2&pageSize=50
-```
-
-### Verificar en DBeaver
-
-Puedes comparar los resultados con consultas directas en DBeaver:
-
-```sql
--- Búsqueda por prefijo (autocomplete)
-SELECT DISTINCT proyecto, categoria, zona 
-FROM housing_universe 
-WHERE proyecto LIKE 'a%'
-ORDER BY proyecto ASC 
-LIMIT 30;
-
--- Catálogo de zonas (filtrado por proyecto)
-SELECT DISTINCT zona 
-FROM housing_universe 
-WHERE proyecto = 'NombreProyecto' AND zona IS NOT NULL AND zona != ''
-ORDER BY zona ASC;
-
--- Resultados filtrados con paginación
-SELECT proyecto, categoria, zona 
-FROM housing_universe 
-WHERE proyecto = 'NombreProyecto' 
-  AND zona = 'ZonaA'  -- opcional
-  AND categoria = 'Cat1'  -- opcional
-ORDER BY proyecto ASC, id ASC
-LIMIT 20 OFFSET 0;
-```
-
-## 🏗️ Arquitectura del Proyecto
-
-### Estructura de Carpetas
+### 1. Búsqueda y Selección de Proyecto
 
 ```
-mi-proyecto/
-├── app/                                    # Directorio principal de Next.js App Router
-│   ├── (ui)/                               # Grupo de rutas UI (route group)
-│   │   └── page.tsx                        # Página principal (Sistema de filtrado completo) ✅
-│   │
-│   ├── api/                                # API Routes (Backend)
-│   │   ├── projects/
-│   │   │   └── route.ts                    # GET /api/projects - Búsqueda por prefijo ✅
-│   │   ├── zones/
-│   │   │   └── route.ts                    # GET /api/zones - Catálogo de zonas ✅
-│   │   ├── categories/
-│   │   │   └── route.ts                    # GET /api/categories - Catálogo categorías ✅
-│   │   └── records/
-│   │       ├── route.ts                    # GET /api/records - Resultados paginados ✅
-│   │       └── [id]/
-│   │           └── route.ts                # GET /api/records/[id] - Detalles completos ✅
-│   │
-│   ├── layout.tsx                          # Layout raíz de la aplicación
-│   ├── globals.css                         # Estilos globales con Tailwind CSS
-│   └── favicon.ico                         # Favicon de la aplicación
-│
-├── src/                                    # Código fuente del proyecto (no Next.js)
-│   ├── lib/
-│   │   └── prisma.ts                       # Singleton de PrismaClient
-│   │
-│   ├── services/                           # Lógica de negocio
-│   │   └── projects.service.ts             # (Futuro) Servicios de proyectos
-│   │
-│   ├── repositories/                       # Acceso a datos (Prisma queries)
-│   │   └── projects.repo.ts                # (Futuro) Repositorio de proyectos
-│   │
-│   ├── validators/                         # Validación de datos
-│   │   └── projects.query.ts               # (Futuro) Validación de query params (Zod)
-│   │
-│   └── types/                              # Tipos y DTOs
-│       └── api.ts                          # (Futuro) Tipos de respuesta API
-│
-├── generated/                              # Archivos generados (no modificar)
-│   └── prisma/                             # Cliente de Prisma generado
-│       ├── client.ts                       # PrismaClient export
-│       ├── browser.ts                      # Cliente para browser
-│       ├── enums.ts                        # Enumeraciones de Prisma
-│       ├── models/                         # Modelos TypeScript generados
-│       │   ├── housing_universe.ts         # Modelo housing_universe
-│       │   ├── Projects.ts                 # Modelo Projects
-│       │   └── ... (36 modelos en total)
-│       ├── models.ts                       # Export de todos los modelos
-│       └── internal/                       # Archivos internos de Prisma
-│
-├── prisma/                                 # Configuración de Prisma
-│   └── schema.prisma                       # Schema de Prisma (36 modelos importados)
-│
-├── public/                                 # Archivos estáticos
-│   ├── file.svg
-│   ├── globe.svg
-│   ├── next.svg
-│   ├── vercel.svg
-│   └── window.svg
-│
-├── .env                                    # Variables de entorno (DATABASE_URL)
-├── .gitignore                              # Archivos ignorados por Git
-├── eslint.config.mjs                       # Configuración de ESLint
-├── next.config.ts                          # Configuración de Next.js
-├── next-env.d.ts                           # Tipos de Next.js (generado)
-├── package.json                            # Dependencias y scripts del proyecto
-├── package-lock.json                       # Lock file de npm
-├── postcss.config.mjs                      # Configuración de PostCSS para Tailwind
-├── prisma.config.ts                        # Configuración de Prisma (opcional)
-├── README.md                               # Este archivo
-└── tsconfig.json                           # Configuración de TypeScript
+Usuario escribe en el input
+    ↓
+Debounce (300ms)
+    ↓
+GET /api/projects?q=prefijo
+    ↓
+Muestra hasta 50 proyectos únicos (sin duplicados)
+    ↓
+Usuario selecciona un proyecto
+    ↓
+Se carga automáticamente:
+  - GET /api/zones?project=...
+  - GET /api/categories?project=...
 ```
 
-### Flujo de Datos
+**Componentes involucrados:**
+- `ProjectAutocomplete` - Input con dropdown
+- `useProjectAutocomplete` - Hook con debounce y búsqueda
+
+### 2. Aplicación de Filtros
 
 ```
-┌─────────────────┐
-│   Usuario       │
-│   Escribe en    │
-│   selector      │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│ app/(ui)/       │ ◄─── Frontend: Componente Selector/Autocomplete
-│ page.tsx        │      - Estados: query, options, isOpen, selected
-│                 │      - Debounce 300ms
-│                 │      - Lógica de primera palabra
-│                 │      - Manejo de selección y limpieza
-└────────┬────────┘
-         │
-         │ fetch("/api/projects?q=...")
-         ▼
-┌─────────────────┐
-│ app/api/        │ ◄─── Backend: API Route Handler
-│ projects/       │      - GET /api/projects
-│ route.ts        │      - Normaliza query (trim)
-│                 │      - Validación de longitud
-│                 │      - (Futuro: servicios/repositorios)
-└────────┬────────┘
-         │
-         │ prisma.housing_universe.findMany()
-         ▼
-┌─────────────────┐
-│ src/lib/        │ ◄─── Singleton de PrismaClient
-│ prisma.ts       │      - Evita múltiples conexiones
-│                 │      - Reutilizable en toda la app
-└────────┬────────┘
-         │
-         │ Prisma ORM
-         ▼
-┌─────────────────┐
-│ generated/      │ ◄─── Cliente de Prisma generado
-│ prisma/         │      - Tipos TypeScript
-│                 │      - Modelos de base de datos
-└────────┬────────┘
-         │
-         │ MySQL Query (startsWith)
-         ▼
-┌─────────────────┐
-│   MySQL DB      │ ◄─── Base de datos
-│ housing_universe│      - Tabla: housing_universe
-│                 │      - Campos: proyecto, categoria, zona
-└─────────────────┘
+Proyecto seleccionado
+    ↓
+Filtros disponibles (zona y categoría)
+    ↓
+Usuario selecciona filtros (opcional)
+    ↓
+Usuario hace click en "Buscar"
+    ↓
+GET /api/records?project=...&zone=...&category=...&page=1&pageSize=5
 ```
 
-### Componentes Principales
+**Componentes involucrados:**
+- `FiltersBar` - Selectores de zona y categoría
+- `useCatalogs` - Hook que carga catálogos dinámicos
+- `useRecordsSearch` - Hook que ejecuta búsqueda paginada
 
-#### 1. Frontend (`app/(ui)/page.tsx`)
-- **Tipo**: Componente React Client Component
-- **Ubicación**: Route group `(ui)` - no afecta la URL
-- **Responsabilidad**: Sistema completo de filtrado con paginación
-- **Estados principales**: 
-  - Selección: `selectedProject`, `selectedZone`, `selectedCategory`
-  - Catálogos: `zones`, `categories`, `loadingCatalogues`
-  - Resultados: `items`, `page`, `pageSize`, `totalPages`, `totalItems`, `loadingResults`
-  - Autocomplete: `query`, `options`, `isOpen`, `loading`, `error`
-- **Funcionalidades**:
-  - Selector de proyecto con autocomplete (debounce 300ms)
-  - Carga automática de catálogos dependientes
-  - Filtrado dinámico por zona y categoría
-  - Resultados paginados con navegación
-  - Estados de carga y mensajes informativos
+### 3. Visualización de Resultados Paginados
 
-#### 2. Backend API - Endpoints Múltiples
+```
+Búsqueda ejecutada
+    ↓
+Muestra 5 resultados por página
+    ↓
+Información de paginación:
+  - "Mostrando X - Y de Z resultados"
+  - "Página X de Y"
+  - Botones Anterior/Siguiente
+    ↓
+Usuario navega entre páginas
+    ↓
+Búsqueda automática con nueva página
+```
 
-**`app/api/projects/route.ts`** - Búsqueda por Prefijo
-- Recibir query param `q`
-- Búsqueda por prefijo en campo `proyecto`
-- Retornar hasta 30 resultados para autocomplete
+**Componentes involucrados:**
+- `ResultsList` - Lista de resultados
+- `ResultItem` - Item individual
+- `Pagination` - Navegación de páginas
+- `useRecordsSearch` - Hook con lógica de paginación
 
-**`app/api/zones/route.ts`** - Catálogo de Zonas
-- Recibir query param `project`
-- Filtrar y obtener zonas únicas
-- Retornar lista ordenada alfabéticamente
+### 4. Visualización de Detalles
 
-**`app/api/categories/route.ts`** - Catálogo de Categorías
-- Recibir query param `project`
-- Filtrar y obtener categorías únicas
-- Retornar lista ordenada alfabéticamente
+```
+Usuario hace click en "Ver detalles"
+    ↓
+Verifica cache (Map<id, details>)
+    ↓
+Si no está en cache:
+  GET /api/records/[id]
+    ↓
+Muestra modal con todos los campos:
+  - Información Básica
+  - Ubicación
+  - Fechas
+  - Desarrollador
+  - Unidades y Área
+  - Precios
+  - Parqueos
+  - Información Adicional
+```
 
-**`app/api/records/route.ts`** - Resultados Filtrados
-- Recibir query params: `project`, `zone`, `category`, `page`, `pageSize`
-- Aplicar filtros dinámicos
-- Implementar paginación
-- Retornar resultados con metadata de paginación
+**Componentes involucrados:**
+- `DetailsModal` - Modal con detalles completos
+- `useRecordDetails` - Hook con cache y carga de detalles
 
-#### 3. Prisma Client (`src/lib/prisma.ts`)
-- **Tipo**: Singleton utility
-- **Ubicación**: `src/lib/` - código compartido del proyecto
-- **Responsabilidad**: 
-  - Instanciar PrismaClient una sola vez
-  - Reutilizar en desarrollo (hot-reload)
-  - Configurar logs según entorno
-  - Centralizar acceso a base de datos
+---
 
-#### 4. Schema de Prisma (`prisma/schema.prisma`)
-- **Tipo**: Definición de esquema
-- **Responsabilidad**: 
-  - Modelos de base de datos (36 modelos)
-  - Configuración de datasource (MySQL)
-  - Generator config (output personalizado)
+## 🏗️ Arquitectura por Capas
 
-### Tecnologías y Herramientas
+### Capa de Presentación (UI)
+**Ubicación:** `app/(ui)/components/`
 
-| Capa | Tecnología | Versión | Propósito |
-|------|-----------|---------|-----------|
-| **Frontend** | Next.js | 16.1.2 | Framework React con App Router |
-| **Frontend** | React | 19.2.3 | Biblioteca UI |
-| **Frontend** | TypeScript | ^5 | Tipado estático |
-| **Frontend** | TailwindCSS | ^4 | Estilos utility-first |
-| **Backend** | Next.js API Routes | 16.1.2 | Endpoints REST |
-| **ORM** | Prisma | 6.19.2 | ORM TypeScript |
-| **Base de Datos** | MySQL | - | Base de datos relacional |
-| **Herramientas** | ESLint | ^9 | Linter de código |
-| **Config** | PostCSS | - | Procesamiento de CSS |
+Componentes presentacionales que solo reciben props y renderizan UI:
+- `ProjectAutocomplete` - Input y dropdown
+- `FiltersBar` - Selectores de filtros
+- `ResultsList` - Lista de resultados
+- `ResultItem` - Item individual
+- `DetailsModal` - Modal de detalles
+- `Pagination` - Navegación de páginas
 
-### Patrones de Diseño
+### Capa de Lógica (Hooks)
+**Ubicación:** `src/hooks/`
 
-1. **Singleton Pattern**: `src/lib/prisma.ts` - Una instancia única de PrismaClient
-2. **Client Component Pattern**: `app/(ui)/page.tsx` - Componente con estado del lado del cliente
-3. **API Route Pattern**: `app/api/projects/route.ts` - Endpoints REST en Next.js
-4. **Debounce Pattern**: Búsqueda optimizada con delay de 300ms
-5. **Separation of Concerns**: Frontend, Backend y Base de Datos separados
-6. **Layered Architecture**: Preparado para servicios, repositorios y validadores (futuro)
+Hooks personalizados que encapsulan lógica de negocio:
+- `useProjectAutocomplete` - Búsqueda con debounce, gestión de estado del autocomplete
+- `useCatalogs` - Carga automática de catálogos cuando cambia el proyecto
+- `useRecordsSearch` - Búsqueda paginada, gestión de página y resultados
+- `useRecordDetails` - Gestión del modal, cache de detalles, carga de datos
 
-### Arquitectura Escalable
+### Capa de Servicios (API)
+**Ubicación:** `src/lib/api/`
 
-La estructura actual soporta crecimiento futuro:
+Funciones que abstraen las llamadas a la API:
+- `projects.api.ts` - `searchProjects(query)`
+- `catalogs.api.ts` - `getZones(project)`, `getCategories(project)`
+- `records.api.ts` - `searchRecords(params)`, `getRecordDetails(id)`
 
-- **Servicios** (`src/services/`): Lógica de negocio compleja (transformaciones, validaciones avanzadas)
-- **Repositorios** (`src/repositories/`): Abstracción de consultas Prisma para reutilización
-- **Validadores** (`src/validators/`): Validación de query params con Zod (mejorar validaciones actuales)
-- **Tipos** (`src/types/`): DTOs y tipos compartidos entre frontend y backend
+### Capa de Backend (API Routes)
+**Ubicación:** `app/api/`
 
-**Endpoints actuales:**
-- ✅ `/api/projects` - Búsqueda por prefijo (autocomplete)
-- ✅ `/api/zones` - Catálogo de zonas
-- ✅ `/api/categories` - Catálogo de categorías  
-- ✅ `/api/records` - Resultados filtrados con paginación
+Endpoints REST que procesan requests y consultan la base de datos:
+- `/api/projects` - Búsqueda por prefijo (máx 50 únicos)
+- `/api/zones` - Catálogo de zonas por proyecto
+- `/api/categories` - Catálogo de categorías por proyecto
+- `/api/records` - Resultados filtrados y paginados (5 por página)
+- `/api/records/[id]` - Detalles completos de un registro
 
-**Futuras extensiones posibles:**
-- Nuevos filtros (ej. por estado, por fecha)
-- Endpoints de detalle (ej. `/api/projects/[id]`)
-- Exportación de resultados (CSV, Excel)
-- Búsqueda avanzada con múltiples criterios
+### Capa de Datos
+**Ubicación:** `prisma/`, `src/lib/prisma.ts`
 
-### Convenciones de Código
+- `schema.prisma` - Definición de modelos (36 modelos desde MySQL)
+- `prisma.ts` - Singleton de PrismaClient
+- `generated/prisma/` - Cliente generado por Prisma
 
-- **Archivos TypeScript**: Extensión `.ts` para utilidades, `.tsx` para componentes React
-- **Rutas API**: Ubicadas en `app/api/[nombre]/route.ts`
-- **Componentes**: Client Components con `"use client"` directive
-- **Route Groups**: `(ui)` para organizar páginas sin afectar URLs
-- **Código Fuente**: `src/` contiene toda la lógica del proyecto (lib, services, repos, etc.)
-- **Archivos Generados**: `generated/` contiene Prisma client (no modificar)
-- **Tipos**: Interfaces definidas en el mismo archivo o en `src/types/`
-- **Estilos**: Tailwind CSS con clases utility-first
-- **Naming**: camelCase para variables/funciones, PascalCase para componentes/tipos
-- **Path Aliases**: `@/*` apunta a raíz, `@/src/*` apunta a `src/`
+### Capa de Tipos
+**Ubicación:** `src/types/`
+
+- `domain.ts` - Tipos del dominio de negocio (Project, RecordDetails, etc.)
+- `api.ts` - Tipos de respuestas de la API
+
+---
+
+## 🔀 Flujo de Datos Completo
+
+### Flujo de Búsqueda de Proyectos
+
+```
+page.tsx
+  ↓ (usa hook)
+useProjectAutocomplete
+  ↓ (llama API)
+projects.api.ts
+  ↓ (fetch)
+GET /api/projects?q=...
+  ↓ (consulta DB)
+Prisma → MySQL
+  ↓ (respuesta)
+projects.api.ts → useProjectAutocomplete → page.tsx → ProjectAutocomplete
+```
+
+### Flujo de Carga de Catálogos
+
+```
+page.tsx (selectedProject cambia)
+  ↓ (usa hook)
+useCatalogs
+  ↓ (llama APIs en paralelo)
+Promise.all([
+  catalogs.api.ts.getZones(),
+  catalogs.api.ts.getCategories()
+])
+  ↓ (fetch paralelo)
+GET /api/zones?project=...
+GET /api/categories?project=...
+  ↓ (consulta DB)
+Prisma → MySQL
+  ↓ (respuesta)
+useCatalogs → page.tsx → FiltersBar
+```
+
+### Flujo de Búsqueda de Resultados
+
+```
+page.tsx (click en "Buscar")
+  ↓ (usa hook)
+useRecordsSearch.handleSearch()
+  ↓ (llama API)
+records.api.ts.searchRecords()
+  ↓ (fetch)
+GET /api/records?project=...&zone=...&category=...&page=1&pageSize=5
+  ↓ (consulta DB con paginación)
+Prisma.findMany({ skip, take })
+  ↓ (respuesta)
+records.api.ts → useRecordsSearch → page.tsx → ResultsList → ResultItem
+```
+
+### Flujo de Navegación de Páginas
+
+```
+Pagination (click en Anterior/Siguiente)
+  ↓ (callback)
+page.tsx (onPreviousPage/onNextPage)
+  ↓ (actualiza estado)
+useRecordsSearch.setPage(newPage)
+  ↓ (ejecuta búsqueda automática)
+useRecordsSearch.handleSearch(newPage)
+  ↓ (mismo flujo que búsqueda inicial)
+GET /api/records?...&page=newPage&pageSize=5
+```
+
+### Flujo de Detalles del Modal
+
+```
+ResultItem (click en "Ver detalles")
+  ↓ (callback)
+page.tsx (onOpenDetails)
+  ↓ (usa hook)
+useRecordDetails.openDetails(id)
+  ↓ (verifica cache)
+detailsCache.has(id) ?
+  → Sí: usa datos del cache
+  → No: records.api.ts.getRecordDetails(id)
+        ↓ (fetch)
+        GET /api/records/[id]
+        ↓ (consulta DB)
+        Prisma.findUnique({ where: { id } })
+        ↓ (guarda en cache)
+        detailsCache.set(id, data)
+  ↓ (muestra modal)
+DetailsModal
+```
+
+---
+
+## 📊 Diagrama de Flujo Principal
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Usuario en Frontend                      │
+└─────────────────────────────────────────────────────────────┘
+                            │
+                            ▼
+        ┌───────────────────────────────────┐
+        │   ProjectAutocomplete             │
+        │   (Escribe para buscar)          │
+        └───────────────────────────────────┘
+                            │
+                            ▼
+        ┌───────────────────────────────────┐
+        │   useProjectAutocomplete          │
+        │   (Debounce 300ms)                │
+        └───────────────────────────────────┘
+                            │
+                            ▼
+        ┌───────────────────────────────────┐
+        │   GET /api/projects?q=...         │
+        └───────────────────────────────────┘
+                            │
+                            ▼
+        ┌───────────────────────────────────┐
+        │   Usuario selecciona proyecto     │
+        └───────────────────────────────────┘
+                            │
+                            ▼
+        ┌───────────────────────────────────┐
+        │   useCatalogs                     │
+        │   (Carga automática)              │
+        └───────────────────────────────────┘
+                            │
+                            ▼
+        ┌───────────────────────────────────┐
+        │   GET /api/zones?project=...      │
+        │   GET /api/categories?project=... │
+        └───────────────────────────────────┘
+                            │
+                            ▼
+        ┌───────────────────────────────────┐
+        │   FiltersBar                      │
+        │   (Usuario selecciona filtros)    │
+        └───────────────────────────────────┘
+                            │
+                            ▼
+        ┌───────────────────────────────────┐
+        │   Click en "Buscar"               │
+        └───────────────────────────────────┘
+                            │
+                            ▼
+        ┌───────────────────────────────────┐
+        │   useRecordsSearch.handleSearch() │
+        └───────────────────────────────────┘
+                            │
+                            ▼
+        ┌───────────────────────────────────┐
+        │   GET /api/records?...&page=1     │
+        │   &pageSize=5                     │
+        └───────────────────────────────────┘
+                            │
+                            ▼
+        ┌───────────────────────────────────┐
+        │   ResultsList                     │
+        │   (Muestra 5 resultados)         │
+        └───────────────────────────────────┘
+                            │
+                            ▼
+        ┌───────────────────────────────────┐
+        │   Pagination                      │
+        │   (Navegación entre páginas)      │
+        └───────────────────────────────────┘
+                            │
+                            ▼
+        ┌───────────────────────────────────┐
+        │   ResultItem                      │
+        │   (Click en "Ver detalles")      │
+        └───────────────────────────────────┘
+                            │
+                            ▼
+        ┌───────────────────────────────────┐
+        │   useRecordDetails.openDetails()  │
+        │   (Verifica cache)                │
+        └───────────────────────────────────┘
+                            │
+                            ▼
+        ┌───────────────────────────────────┐
+        │   GET /api/records/[id]           │
+        │   (Si no está en cache)           │
+        └───────────────────────────────────┘
+                            │
+                            ▼
+        ┌───────────────────────────────────┐
+        │   DetailsModal                    │
+        │   (Muestra todos los campos)      │
+        └───────────────────────────────────┘
+```
+
+---
+
+## 🎯 Principios de Arquitectura
+
+### Separación de Responsabilidades
+- **Componentes UI**: Solo renderizan, no tienen lógica de negocio
+- **Hooks**: Encapsulan lógica reutilizable
+- **API Functions**: Abstraen llamadas HTTP
+- **API Routes**: Procesan requests y consultan DB
+
+### Reutilización
+- Hooks pueden ser usados en múltiples componentes
+- Funciones API centralizadas
+- Componentes presentacionales reutilizables
+
+### Escalabilidad
+- Estructura modular fácil de extender
+- Nuevos componentes/hooks siguen el mismo patrón
+- Tipos TypeScript para seguridad
+
+### Performance
+- Debounce en búsqueda (300ms)
+- Cache de detalles (Map)
+- Paginación (5 items por página)
+- Lazy loading de catálogos
+
+---
+
+**Última actualización:** Diciembre 2024

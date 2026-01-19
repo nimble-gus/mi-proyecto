@@ -1,12 +1,18 @@
 import { Project } from "@/src/types/domain";
 import { ResultItem } from "./ResultItem";
+import { Pagination } from "./Pagination";
 
 interface ResultsListProps {
   items: Project[];
   loadingResults: boolean;
   error: string | null;
   totalItems: number;
+  page: number;
+  totalPages: number;
+  pageSize: number;
   onOpenDetails: (id: number) => void;
+  onPreviousPage: () => void;
+  onNextPage: () => void;
 }
 
 export function ResultsList({
@@ -14,7 +20,12 @@ export function ResultsList({
   loadingResults,
   error,
   totalItems,
+  page,
+  totalPages,
+  pageSize,
   onOpenDetails,
+  onPreviousPage,
+  onNextPage,
 }: ResultsListProps) {
   return (
     <div className="flex flex-col gap-4">
@@ -52,15 +63,27 @@ export function ResultsList({
 
       {/* Lista de resultados */}
       {!loadingResults && items.length > 0 && (
-        <div className="flex flex-col gap-3">
-          {items.map((item) => (
-            <ResultItem
-              key={item.id}
-              project={item}
-              onOpenDetails={onOpenDetails}
-            />
-          ))}
-        </div>
+        <>
+          <div className="flex flex-col gap-3">
+            {items.map((item) => (
+              <ResultItem
+                key={item.id}
+                project={item}
+                onOpenDetails={onOpenDetails}
+              />
+            ))}
+          </div>
+
+          {/* Paginación */}
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPrevious={onPreviousPage}
+            onNext={onNextPage}
+          />
+        </>
       )}
     </div>
   );
