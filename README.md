@@ -321,6 +321,15 @@ El archivo `lib/prisma.ts` exporta una instancia singleton de PrismaClient para 
 - Retorna `items`, `page`, `pageSize`, `totalItems`, `totalPages`
 - Orden estable para paginación consistente
 
+#### 5. `/api/records/[id]` - Detalles Completos de un Registro
+
+**Archivo:** `app/api/records/[id]/route.ts`
+
+- Obtiene todos los campos de un registro específico por su ID
+- Validación de ID (debe ser número válido mayor a 0)
+- Retorna `{ record: {...} }` con todos los campos
+- Manejo de errores: 400 (ID inválido), 404 (no encontrado), 500 (error del servidor)
+
 ### Frontend - Flujo Completo de Filtrado
 
 **Archivo:** `app/(ui)/page.tsx`
@@ -364,6 +373,7 @@ El archivo `lib/prisma.ts` exporta una instancia singleton de PrismaClient para 
    - `app/api/zones/route.ts` - Catálogo de zonas por proyecto
    - `app/api/categories/route.ts` - Catálogo de categorías por proyecto
    - `app/api/records/route.ts` - Resultados filtrados con paginación
+   - `app/api/records/[id]/route.ts` - Detalles completos de un registro
 8. ✅ **Frontend - Flujo completo:**
    - `app/(ui)/page.tsx` - Sistema de filtrado completo
    - Selector de proyecto con autocomplete
@@ -476,7 +486,9 @@ mi-proyecto/
 │   │   ├── categories/
 │   │   │   └── route.ts                    # GET /api/categories - Catálogo categorías ✅
 │   │   └── records/
-│   │       └── route.ts                    # GET /api/records - Resultados paginados ✅
+│   │       ├── route.ts                    # GET /api/records - Resultados paginados ✅
+│   │       └── [id]/
+│   │           └── route.ts                # GET /api/records/[id] - Detalles completos ✅
 │   │
 │   ├── layout.tsx                          # Layout raíz de la aplicación
 │   ├── globals.css                         # Estilos globales con Tailwind CSS

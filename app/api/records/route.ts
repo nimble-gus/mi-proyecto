@@ -76,6 +76,7 @@ export async function GET(request: NextRequest) {
       where,
       select: {
         // Performance: Seleccionar solo los campos necesarios
+        id: true, // ID necesario para el botón "Ver detalles"
         proyecto: true,
         categoria: true,
         zona: true,
