@@ -5,11 +5,11 @@ import { Project, SelectedProject } from "@/src/types/domain";
 import { useProjectAutocomplete } from "@/src/hooks/useProjectAutocomplete";
 import { useCatalogs } from "@/src/hooks/useCatalogs";
 import { useRecordsSearch } from "@/src/hooks/useRecordsSearch";
-import { ProjectAutocomplete } from "./components/ProjectAutocomplete";
-import { FiltersBar } from "./components/FiltersBar";
-import { ResultsList } from "./components/ResultsList";
+import { ProjectAutocomplete } from "../(ui)/components/ProjectAutocomplete";
+import { FiltersBar } from "../(ui)/components/FiltersBar";
+import { ResultsList } from "../(ui)/components/ResultsList";
 
-export default function Home() {
+export default function SearchPage() {
   // Estado del proyecto seleccionado
   const [selectedProject, setSelectedProject] = useState<SelectedProject | null>(null);
   

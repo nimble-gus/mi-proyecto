@@ -55,6 +55,8 @@ export async function GET(
         ingresos_promedio: true,
         cantidad_accesos: true,
         url_imagen: true,
+        latitud: true,
+        longitud: true,
       },
     });
 

@@ -69,7 +69,7 @@ export default function RecordDetailsPage() {
         </div>
 
         {/* Imagen del proyecto */}
-        {details && details.url_imagen && (
+        {details?.url_imagen && (
           <div className="mt-6 rounded-lg border border-[#E5E7EB] bg-white p-6 shadow-sm">
             <h2 className="mb-4 text-xl font-semibold text-[#111827]">
               Imagen del Proyecto

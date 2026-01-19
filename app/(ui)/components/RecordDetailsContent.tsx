@@ -97,6 +97,14 @@ export function RecordDetailsContent({
             <span className="text-sm font-medium text-[#6B7280]">Zona:</span>
             <p className="text-[#111827]">{formatValue(details.zona)}</p>
           </div>
+          <div>
+            <span className="text-sm font-medium text-[#6B7280]">Latitud:</span>
+            <p className="text-[#111827]">{details.latitud !== null && details.latitud !== undefined ? details.latitud : "N/A"}</p>
+          </div>
+          <div>
+            <span className="text-sm font-medium text-[#6B7280]">Longitud:</span>
+            <p className="text-[#111827]">{details.longitud !== null && details.longitud !== undefined ? details.longitud : "N/A"}</p>
+          </div>
         </div>
       </div>
 

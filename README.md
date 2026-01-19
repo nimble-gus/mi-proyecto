@@ -20,15 +20,31 @@ La interfaz está organizada en un diseño de **2 columnas**: un **panel lateral
 ```
 mi-proyecto/
 ├── app/
+│   ├── page.tsx                        # Página de Login (raíz /)
+│   ├── login/
+│   │   ├── page.tsx                    # Componente de login (redirigido desde /)
+│   │   └── components/
+│   │       ├── AuthIntro.tsx           # Panel izquierdo informativo
+│   │       ├── AuthCard.tsx            # Contenedor del formulario
+│   │       ├── AuthTabs.tsx            # Tabs Login/Register
+│   │       ├── LoginForm.tsx           # Formulario de login
+│   │       ├── RegisterForm.tsx        # Formulario de registro
+│   │       ├── TextInput.tsx           # Input de texto reutilizable
+│   │       ├── PasswordInput.tsx       # Input de contraseña reutilizable
+│   │       └── PrimaryButton.tsx       # Botón principal reutilizable
+│   ├── search/
+│   │   └── page.tsx                    # Página principal de búsqueda (/search)
 │   ├── (ui)/
-│   │   ├── page.tsx                    # Componente principal (solo composición)
 │   │   └── components/
 │   │       ├── ProjectAutocomplete.tsx # Selector de proyecto con autocomplete
 │   │       ├── FiltersBar.tsx          # Filtros de zona, categoría y período
 │   │       ├── ResultsList.tsx         # Lista de resultados paginados
 │   │       ├── ResultItem.tsx          # Item individual (proyecto, categoría, zona, período)
-│   │       ├── DetailsModal.tsx        # Modal con detalles completos
+│   │       ├── RecordDetailsContent.tsx # Contenido de detalles reutilizable
 │   │       └── Pagination.tsx          # Componente de paginación (5 por página)
+│   ├── records/
+│   │   └── [id]/
+│   │       └── page.tsx                # Página de detalles del proyecto (/records/[id])
 │   ├── api/
 │   │   ├── projects/
 │   │   │   └── route.ts                # GET /api/projects - Búsqueda por prefijo
@@ -42,20 +58,23 @@ mi-proyecto/
 │   │       ├── route.ts                # GET /api/records - Resultados paginados
 │   │       └── [id]/
 │   │           └── route.ts            # GET /api/records/[id] - Detalles completos
-│   ├── layout.tsx
-│   └── globals.css
+│   ├── layout.tsx                      # Layout raíz con tipografía Inter
+│   └── globals.css                     # Estilos globales y paleta de colores
 ├── src/
 │   ├── hooks/
+│   │   ├── useAuth.ts                  # Hook: autenticación (login/register)
 │   │   ├── useProjectAutocomplete.ts   # Hook: autocomplete + debounce (300ms)
-│   │   ├── useCatalogs.ts              # Hook: carga automática de catálogos (zonas, categorías, períodos)
+│   │   ├── useCatalogs.ts              # Hook: carga automática de catálogos
 │   │   ├── useRecordsSearch.ts        # Hook: búsqueda paginada (5 por página)
-│   │   └── useRecordDetails.ts        # Hook: modal + cache de detalles
+│   │   └── useRecordDetails.ts        # Hook: detalles + cache
 │   ├── lib/
 │   │   ├── prisma.ts                  # PrismaClient singleton
-│   │   └── api/
-│   │       ├── projects.api.ts         # API: searchProjects(query)
-│   │       ├── catalogs.api.ts        # API: getZones(project), getCategories(project), getPeriods(project)
-│   │       └── records.api.ts         # API: searchRecords(params), getRecordDetails(id)
+│   │   ├── api/
+│   │   │   ├── projects.api.ts         # API: searchProjects(query)
+│   │   │   ├── catalogs.api.ts        # API: getZones, getCategories, getPeriods
+│   │   │   └── records.api.ts         # API: searchRecords, getRecordDetails
+│   │   └── utils/
+│   │       └── formatters.ts           # Funciones: formatValue, formatDate
 │   └── types/
 │       ├── domain.ts                  # Tipos: Project, SelectedProject, RecordDetails
 │       └── api.ts                     # Tipos: respuestas de API
@@ -71,13 +90,42 @@ mi-proyecto/
 
 ## 🎨 Diseño de Interfaz
 
-### Layout de 2 Columnas
+### Paleta de Colores
+
+- **Primary**: Azul petróleo (#1F3A5F) - Botones principales, acciones destacadas
+- **Secondary**: Azul claro (#4DA3FF) - Links, hover states, focus rings
+- **Surface**: Blanco (#FFFFFF) - Fondos principales
+- **Muted**: Gris claro (#F3F4F6) - Fondos de sidebar, estados disabled, hover suave
+- **Text**: Gris oscuro (#111827) - Texto principal
+- **Border**: Gris suave (#E5E7EB) - Bordes y separadores
+- **Success/Error**: Verde/Rojo sobrios para mensajes
+
+### Tipografía
+
+- **Primaria**: Inter (Google Fonts)
+- **Títulos**: Semibold
+- **Body**: Regular
+- **Labels**: Medium (para filtros e inputs)
+
+### Layout de Autenticación (`/`)
+
+- **2 Columnas (Desktop)**:
+  - Izquierda (50%): Panel informativo (`AuthIntro`) - contenido estático
+  - Derecha (50%): Formulario de autenticación (`AuthCard`) - contenido interactivo
+  
+- **1 Columna (Mobile)**:
+  - Formulario arriba
+  - Panel informativo abajo
+
+- **Full Screen**: Cubre toda la altura de la pantalla (min-h-screen / h-screen)
+
+### Layout de Búsqueda (`/search`)
 
 - **Sidebar Izquierdo (Persistente)**:
-  - Panel de filtros siempre visible
+  - Panel de filtros siempre visible (fondo gris claro #F3F4F6)
   - Filtros: Zona, Categoría, Período
   - Selects deshabilitados hasta que se seleccione un proyecto
-  - Botón "Limpiar filtros" cuando hay filtros activos
+  - Botón "Limpiar filtros" como link secundario cuando hay filtros activos
   - En mobile: se muestra arriba (stack vertical)
 
 - **Área Principal (Derecha)**:
@@ -85,10 +133,77 @@ mi-proyecto/
   - Contenedor de resultados paginados (abajo)
   - Mensajes de estado (sin proyecto, cargando, sin resultados)
 
+### Layout de Detalles (`/records/[id]`)
+
+- **Header Sticky**: Botón "Volver", título "Detalles del Proyecto", botón "Editar"
+- **Contenido**: Grid responsive (2 columnas desktop / 1 móvil) organizado en secciones
+- **Imagen del Proyecto**: Al final de la página (si está disponible)
+- **Footer Sticky**: Botón "Guardar" centrado
+
 ### Responsive Design
 
-- **Desktop (≥1024px)**: 2 columnas - Sidebar izquierdo sticky + Área principal
-- **Mobile (<1024px)**: 1 columna - Sidebar arriba + Área principal abajo
+- **Desktop (≥1024px)**: Layouts completos con sidebar sticky, grid de 2 columnas
+- **Mobile (<1024px)**: Stack vertical, una columna, elementos apilados
+
+---
+
+## 📦 Módulo 0: Autenticación
+
+Este módulo maneja el inicio de sesión y registro de usuarios. La página de login está en la raíz (`/`) y es independiente del layout principal del sistema de búsqueda.
+
+### 0.1. Estructura de Rutas de Autenticación
+
+```
+Usuario visita http://localhost:3000/
+    ↓
+Página de Login (app/page.tsx)
+    ↓
+Layout de 2 columnas:
+  - Izquierda: Panel informativo (AuthIntro)
+  - Derecha: Formulario de autenticación (AuthCard)
+    ↓
+Usuario hace click en "Ingresar" o "Registrarse"
+    ↓
+Redirección automática a /search (página de búsqueda)
+```
+
+**Componentes involucrados:**
+- `app/page.tsx` - Página principal de login (raíz)
+- `AuthIntro` - Panel izquierdo con información del sistema
+- `AuthCard` - Contenedor del formulario de autenticación
+- `AuthTabs` - Tabs para alternar entre Login y Register
+- `LoginForm` - Formulario de inicio de sesión
+- `RegisterForm` - Formulario de registro
+- `TextInput` - Input de texto reutilizable
+- `PasswordInput` - Input de contraseña con toggle mostrar/ocultar
+- `PrimaryButton` - Botón principal con estados de loading
+
+**Características:**
+- Layout responsivo: 2 columnas en desktop, apilado en mobile
+- Formularios con validación básica
+- Estados de loading durante el proceso
+- Manejo de errores con mensajes claros
+- Por el momento: sin validación real, solo estructura y redirección
+- Redirección automática a `/search` después de login/registro exitoso
+
+**Hook de autenticación:**
+- `useAuth` - Maneja login y register, redirección automática
+- Actualmente simula autenticación (preparado para conectar con API real)
+- Guarda sesión en localStorage (desarrollo)
+
+### 0.2. Flujo de Datos del Módulo 0
+
+```
+LoginPage
+  ↓ (usa hook)
+useAuth.login()
+  ↓ (simulación)
+localStorage.setItem("auth_session", ...)
+  ↓ (redirección)
+router.push("/search")
+  ↓
+Página de Búsqueda
+```
 
 ---
 
@@ -120,6 +235,7 @@ Búsqueda automática de resultados (page=1)
 ```
 
 **Componentes involucrados:**
+- `app/search/page.tsx` - Página principal de búsqueda
 - `ProjectAutocomplete` - Input con dropdown (área principal, arriba)
 - `useProjectAutocomplete` - Hook con debounce y búsqueda
 
@@ -261,6 +377,8 @@ Búsqueda automática con nueva página (mantiene filtros)
 ```
 Usuario hace click en "Ver detalles" en un ResultItem
     ↓
+Navegación a /records/[id]
+    ↓
 Verifica cache (Map<id, details>)
     ↓
 Si no está en cache:
@@ -268,7 +386,7 @@ Si no está en cache:
     ↓
 Guarda en cache
     ↓
-Muestra modal con campos específicos:
+Muestra página de detalles con campos específicos:
   - Información Básica (proyecto, fase, torre, período, categoría, estado)
   - Ubicación (país, departamento, municipio, zona)
   - Desarrollador
@@ -279,17 +397,21 @@ Muestra modal con campos específicos:
 ```
 
 **Componentes involucrados:**
-- `DetailsModal` - Modal con detalles completos organizados en secciones
+- `app/records/[id]/page.tsx` - Página de detalles del proyecto
+- `RecordDetailsContent` - Contenido de detalles organizados en secciones
 - `useRecordDetails` - Hook con cache y carga de detalles
-- `ResultItem` - Botón "Ver detalles" que dispara la acción
+- `ResultItem` - Link "Ver detalles" que navega a la página
 
 **Características:**
 - Cache de detalles para evitar peticiones redundantes
-- Modal responsive con scroll interno
-- Organización lógica de campos en secciones
-- Formateo de valores (fechas, números, enlaces)
+- Página dedicada responsive con layout completo
+- Header sticky con botón "Volver", título y botón "Editar"
+- Footer sticky con botón "Guardar"
+- Organización lógica de campos en secciones (Grid 2 columnas desktop / 1 móvil)
+- Formateo de valores (fechas, números, enlaces) - funciones en `src/lib/utils/formatters.ts`
 - Manejo de valores null/undefined (muestra 0 o N/A según corresponda)
-- Cierre con botón, click fuera o tecla ESC
+- Imagen del proyecto al final de la página (si `url_imagen` está disponible)
+- Navegación nativa de Next.js (mejor UX que modal)
 
 ### 2.3. Flujo de Datos del Módulo 2
 
@@ -325,25 +447,30 @@ GET /api/records?...&page=newPage&pageSize=5
 ResultsList → ResultItem
 ```
 
-**Detalles del Modal:**
+**Detalles de la Página:**
 ```
 ResultItem (click en "Ver detalles")
-  ↓ (callback)
-page.tsx (onOpenDetails)
+  ↓ (Link component)
+Navegación a /records/[id]
+  ↓ (página carga)
+app/records/[id]/page.tsx
   ↓ (usa hook)
-useRecordDetails.openDetails(id)
+useRecordDetails.loadDetails(id)
   ↓ (verifica cache)
 detailsCache.has(id) ?
   → Sí: usa datos del cache
   → No: records.api.ts.getRecordDetails(id)
         ↓ (fetch)
         GET /api/records/[id]
-        ↓ (consulta DB)
-        Prisma.housing_universe.findUnique({ where: { id } })
+        ↓ (consulta DB con select específico)
+        Prisma.housing_universe.findUnique({ 
+          where: { id },
+          select: { proyecto, fase, torre, ... }
+        })
         ↓ (guarda en cache)
         detailsCache.set(id, data)
-  ↓ (muestra modal)
-DetailsModal
+  ↓ (renderiza página)
+RecordDetailsContent + Imagen
 ```
 
 ### 2.4. Campos Mostrados en Resultados
@@ -374,7 +501,19 @@ DetailsModal
 
 Componentes presentacionales que solo reciben props y renderizan UI:
 
+**Módulo 0 - Autenticación:**
+- **`app/page.tsx`** - Página de login (raíz `/`)
+- **`AuthIntro`** - Panel izquierdo informativo (solo lectura)
+- **`AuthCard`** - Contenedor del formulario de autenticación
+- **`AuthTabs`** - Tabs para alternar entre Login y Register
+- **`LoginForm`** - Formulario de inicio de sesión
+- **`RegisterForm`** - Formulario de registro con validación
+- **`TextInput`** - Input de texto reutilizable con validación
+- **`PasswordInput`** - Input de contraseña con toggle mostrar/ocultar
+- **`PrimaryButton`** - Botón principal con estados de loading
+
 **Módulo 1 - Búsqueda y Filtros:**
+- **`app/search/page.tsx`** - Página principal de búsqueda (`/search`)
 - **`ProjectAutocomplete`** - Input y dropdown con búsqueda en tiempo real (área principal, arriba)
 - **`FiltersBar`** - Sidebar persistente con selectores de filtros (zona, categoría y período)
 
@@ -382,12 +521,16 @@ Componentes presentacionales que solo reciben props y renderizan UI:
 - **`ResultsList`** - Contenedor principal de resultados con estados de carga/error (área principal, parte inferior)
 - **`ResultItem`** - Item individual que muestra: proyecto, categoría, zona, período, total unidades
 - **`Pagination`** - Navegación entre páginas con información de resultados (siempre presente si hay páginas)
-- **`DetailsModal`** - Modal con detalles específicos organizados en secciones (solo campos necesarios)
+- **`app/records/[id]/page.tsx`** - Página de detalles del proyecto (ruta dinámica)
+- **`RecordDetailsContent`** - Contenido de detalles organizados en secciones (reutilizable)
 
 ### Capa de Lógica (Hooks)
 **Ubicación:** `src/hooks/`
 
 Hooks personalizados que encapsulan lógica de negocio:
+
+**Módulo 0 - Autenticación:**
+- **`useAuth`** - Manejo de login y register, redirección automática, estados de loading/error
 
 **Módulo 1 - Búsqueda y Filtros:**
 - **`useProjectAutocomplete`** - Búsqueda con debounce (300ms), gestión de estado del autocomplete, eliminación de duplicados (máx 50 únicos)
@@ -396,7 +539,7 @@ Hooks personalizados que encapsulan lógica de negocio:
 
 **Módulo 2 - Visualización de Resultados:**
 - **`useRecordsSearch`** - Gestión de resultados, búsqueda automática al cambiar página, estados de carga/error
-- **`useRecordDetails`** - Gestión del modal, cache de detalles (Map), carga de datos desde API
+- **`useRecordDetails`** - Cache de detalles (useRef con Map), carga de datos desde API, sin modal (rediseñado para página dedicada)
 
 ### Capa de Servicios (API Functions)
 **Ubicación:** `src/lib/api/`
@@ -406,6 +549,13 @@ Funciones que abstraen las llamadas a la API:
 - **`projects.api.ts`** - `searchProjects(query: string)` - Búsqueda por prefijo
 - **`catalogs.api.ts`** - `getZones(project: string)`, `getCategories(project: string)`, `getPeriods(project: string)` - Catálogos dinámicos
 - **`records.api.ts`** - `searchRecords(params)`, `getRecordDetails(id: number)` - Registros y detalles (soporta filtros: zone, category, period)
+
+### Capa de Utilidades
+**Ubicación:** `src/lib/utils/`
+
+Funciones helper reutilizables:
+
+- **`formatters.ts`** - `formatValue(value)`, `formatDate(dateString)` - Formateo de valores y fechas para visualización consistente
 
 ### Capa de Backend (API Routes)
 **Ubicación:** `app/api/`
@@ -432,7 +582,7 @@ Endpoints REST que procesan requests y consultan la base de datos:
 - **`domain.ts`** - Tipos del dominio de negocio:
   - `Project` - { id, proyecto, categoria, zona, periodo, total_unidades }
   - `SelectedProject` - { proyecto, categoria, zona }
-  - `RecordDetails` - Campos específicos del modal (proyecto, fase, torre, periodo, categoria, pais, departamento, municipio, zona, desarrollador, estado, fecha_inicio, fecha_entrega, total_unidades, unidades_disponibles, tipo_de_seguridad, precio_promedio, cuota_promedio, ingresos_promedio, cantidad_accesos, url_imagen)
+  - `RecordDetails` - Campos específicos de la página de detalles (proyecto, fase, torre, periodo, categoria, pais, departamento, municipio, zona, desarrollador, estado, fecha_inicio, fecha_entrega, total_unidades, unidades_disponibles, tipo_de_seguridad, precio_promedio, cuota_promedio, ingresos_promedio, cantidad_accesos, url_imagen, latitud, longitud)
 - **`api.ts`** - Tipos de respuestas de la API:
   - `ProjectsResponse`, `ZonesResponse`, `CategoriesResponse`, `PeriodsResponse`
   - `RecordsResponse`, `DetailsResponse`

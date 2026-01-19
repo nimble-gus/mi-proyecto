@@ -37,4 +37,6 @@ export interface RecordDetails {
   ingresos_promedio: string | null;
   cantidad_accesos: string | null;
   url_imagen: string | null;
+  latitud: number | null;
+  longitud: number | null;
 }
