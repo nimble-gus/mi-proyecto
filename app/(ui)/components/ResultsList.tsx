@@ -10,7 +10,6 @@ interface ResultsListProps {
   page: number;
   totalPages: number;
   pageSize: number;
-  onOpenDetails: (id: number) => void;
   onPreviousPage: () => void;
   onNextPage: () => void;
 }
@@ -23,7 +22,6 @@ export function ResultsList({
   page,
   totalPages,
   pageSize,
-  onOpenDetails,
   onPreviousPage,
   onNextPage,
 }: ResultsListProps) {
@@ -68,7 +66,6 @@ export function ResultsList({
             <ResultItem
               key={item.id}
               project={item}
-              onOpenDetails={onOpenDetails}
             />
           ))}
         </div>

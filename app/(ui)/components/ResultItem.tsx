@@ -1,11 +1,13 @@
+"use client";
+
+import Link from "next/link";
 import { Project } from "@/src/types/domain";
 
 interface ResultItemProps {
   project: Project;
-  onOpenDetails: (id: number) => void;
 }
 
-export function ResultItem({ project, onOpenDetails }: ResultItemProps) {
+export function ResultItem({ project }: ResultItemProps) {
   return (
     <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
       <div className="flex items-start justify-between gap-4">
@@ -30,13 +32,12 @@ export function ResultItem({ project, onOpenDetails }: ResultItemProps) {
             </div>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={() => onOpenDetails(project.id)}
+        <Link
+          href={`/records/${project.id}`}
           className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 whitespace-nowrap"
         >
           Ver detalles
-        </button>
+        </Link>
       </div>
     </div>
   );

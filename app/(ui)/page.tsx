@@ -5,11 +5,9 @@ import { Project, SelectedProject } from "@/src/types/domain";
 import { useProjectAutocomplete } from "@/src/hooks/useProjectAutocomplete";
 import { useCatalogs } from "@/src/hooks/useCatalogs";
 import { useRecordsSearch } from "@/src/hooks/useRecordsSearch";
-import { useRecordDetails } from "@/src/hooks/useRecordDetails";
 import { ProjectAutocomplete } from "./components/ProjectAutocomplete";
 import { FiltersBar } from "./components/FiltersBar";
 import { ResultsList } from "./components/ResultsList";
-import { DetailsModal } from "./components/DetailsModal";
 
 export default function Home() {
   // Estado del proyecto seleccionado
@@ -28,9 +26,6 @@ export default function Home() {
 
   // Hook de búsqueda de resultados (búsqueda automática)
   const recordsSearch = useRecordsSearch(selectedProject, selectedZone, selectedCategory, selectedPeriod);
-
-  // Hook de detalles del modal
-  const recordDetails = useRecordDetails();
 
   // Handlers
   const handleSelectProject = useCallback((project: Project) => {
@@ -142,22 +137,12 @@ export default function Home() {
               page={recordsSearch.page}
               totalPages={recordsSearch.totalPages}
               pageSize={recordsSearch.pageSize}
-              onOpenDetails={recordDetails.openDetails}
               onPreviousPage={() => recordsSearch.setPage(Math.max(1, recordsSearch.page - 1))}
               onNextPage={() => recordsSearch.setPage(Math.min(recordsSearch.totalPages, recordsSearch.page + 1))}
             />
           )}
         </div>
       </main>
-
-      {/* Modal de detalles */}
-      <DetailsModal
-        isOpen={recordDetails.isModalOpen}
-        onClose={recordDetails.closeModal}
-        details={recordDetails.details}
-        loadingDetails={recordDetails.loadingDetails}
-        errorDetails={recordDetails.errorDetails}
-      />
     </div>
   );
 }

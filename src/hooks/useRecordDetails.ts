@@ -1,23 +1,19 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { RecordDetails } from "@/src/types/domain";
 import { getRecordDetails } from "@/src/lib/api/records.api";
 
 export function useRecordDetails() {
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [selectedId, setSelectedId] = useState<number | null>(null);
   const [details, setDetails] = useState<RecordDetails | null>(null);
   const [loadingDetails, setLoadingDetails] = useState<boolean>(false);
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
-  const [detailsCache, setDetailsCache] = useState<Map<number, RecordDetails>>(new Map());
+  const detailsCache = useRef<Map<number, RecordDetails>>(new Map());
 
-  const openDetails = useCallback(async (id: number) => {
-    setSelectedId(id);
-    setIsModalOpen(true);
+  const loadDetails = useCallback(async (id: number) => {
     setErrorDetails(null);
 
     // Verificar cache
-    if (detailsCache.has(id)) {
-      setDetails(detailsCache.get(id)!);
+    if (detailsCache.current.has(id)) {
+      setDetails(detailsCache.current.get(id)!);
       setLoadingDetails(false);
       return;
     }
@@ -29,34 +25,23 @@ export function useRecordDetails() {
       setDetails(data.record);
 
       // Guardar en cache
-      setDetailsCache((prev) => {
-        const newCache = new Map(prev);
-        newCache.set(id, data.record);
-        return newCache;
-      });
+      detailsCache.current.set(id, data.record);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Error al obtener detalles. Por favor, intenta nuevamente.";
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Error al obtener detalles. Por favor, intenta nuevamente.";
       setErrorDetails(errorMessage);
       setDetails(null);
     } finally {
       setLoadingDetails(false);
     }
-  }, [detailsCache]);
-
-  const closeModal = useCallback(() => {
-    setIsModalOpen(false);
-    setSelectedId(null);
-    setErrorDetails(null);
-    // Mantener details en cache (no se limpia)
   }, []);
 
   return {
-    isModalOpen,
-    selectedId,
     details,
     loadingDetails,
     errorDetails,
-    openDetails,
-    closeModal,
+    loadDetails,
   };
 }
