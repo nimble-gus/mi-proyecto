@@ -35,10 +35,10 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
       <div className="flex flex-col gap-2">
         <label
           htmlFor={id}
-          className="text-sm font-medium text-[#111827]"
+          className="text-sm font-semibold text-[#1F3A5F] flex items-center gap-1.5"
         >
           {label}
-          {required && <span className="text-[#EF4444] ml-1">*</span>}
+          {required && <span className="text-[#EF4444] font-bold">*</span>}
         </label>
         <input
           ref={ref}
@@ -53,11 +53,11 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
           aria-label={label}
           aria-invalid={error ? "true" : "false"}
           aria-describedby={error ? `${id}-error` : undefined}
-          className={`w-full rounded-lg border ${
+          className={`w-full rounded-lg border-2 ${
             error
-              ? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]/20"
-              : "border-[#E5E7EB] focus:border-[#4DA3FF] focus:ring-[#4DA3FF]/20"
-          } bg-white px-4 py-3 text-base text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:cursor-not-allowed disabled:bg-[#F3F4F6] disabled:text-[#9CA3AF] transition-colors`}
+              ? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#EF4444]/30 bg-[#FEE2E2]/50"
+              : "border-[#E5E7EB] focus:border-[#4DA3FF] focus:ring-[#4DA3FF]/30 bg-white"
+          } px-4 py-3 text-base text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-offset-0 hover:border-[#4DA3FF]/50 disabled:cursor-not-allowed disabled:bg-[#F3F4F6] disabled:text-[#9CA3AF] transition-all shadow-sm hover:shadow-md focus:shadow-lg`}
         />
         {error && (
           <p

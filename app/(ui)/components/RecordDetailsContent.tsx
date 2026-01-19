@@ -45,41 +45,50 @@ export function RecordDetailsContent({
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       {/* Información Básica */}
-      <div className="col-span-full">
-        <h3 className="mb-3 text-base font-semibold text-[#111827]">
+      <div className="col-span-full rounded-lg border border-[#E5E7EB] bg-gradient-to-br from-white to-[#4DA3FF]/5 p-5">
+        <h3 className="mb-3 flex items-center gap-2 text-base font-semibold text-[#1F3A5F] border-b-2 border-[#4DA3FF]/20 pb-2">
+          <svg className="h-5 w-5 text-[#4DA3FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
           Información Básica
         </h3>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
-            <span className="text-sm font-medium text-[#6B7280]">Proyecto:</span>
-            <p className="text-[#111827]">{formatValue(details.proyecto)}</p>
+            <span className="text-sm font-semibold text-[#1F3A5F]">Proyecto:</span>
+            <p className="mt-1 text-[#111827] font-medium">{formatValue(details.proyecto)}</p>
           </div>
           <div>
-            <span className="text-sm font-medium text-[#6B7280]">Fase:</span>
-            <p className="text-[#111827]">{formatValue(details.fase)}</p>
+            <span className="text-sm font-semibold text-[#1F3A5F]">Fase:</span>
+            <p className="mt-1 text-[#111827] font-medium">{formatValue(details.fase)}</p>
           </div>
           <div>
-            <span className="text-sm font-medium text-[#6B7280]">Torre:</span>
-            <p className="text-[#111827]">{formatValue(details.torre)}</p>
+            <span className="text-sm font-semibold text-[#1F3A5F]">Torre:</span>
+            <p className="mt-1 text-[#111827] font-medium">{formatValue(details.torre)}</p>
           </div>
           <div>
-            <span className="text-sm font-medium text-[#6B7280]">Período:</span>
-            <p className="text-[#111827]">{formatValue(details.periodo)}</p>
+            <span className="text-sm font-semibold text-[#1F3A5F]">Período:</span>
+            <p className="mt-1 text-[#111827] font-medium">{formatValue(details.periodo)}</p>
           </div>
           <div>
-            <span className="text-sm font-medium text-[#6B7280]">Categoría:</span>
-            <p className="text-[#111827]">{formatValue(details.categoria)}</p>
+            <span className="text-sm font-semibold text-[#1F3A5F]">Categoría:</span>
+            <p className="mt-1 text-[#4DA3FF] font-semibold">{formatValue(details.categoria)}</p>
           </div>
           <div>
-            <span className="text-sm font-medium text-[#6B7280]">Estado:</span>
-            <p className="text-[#111827]">{formatValue(details.estado)}</p>
+            <span className="text-sm font-semibold text-[#1F3A5F]">Estado:</span>
+            <p className="mt-1 text-[#10B981] font-semibold">{formatValue(details.estado)}</p>
           </div>
         </div>
       </div>
 
       {/* Ubicación */}
-      <div className="col-span-full">
-        <h3 className="mb-3 text-base font-semibold text-[#111827]">Ubicación</h3>
+      <div className="col-span-full rounded-lg border border-[#E5E7EB] bg-gradient-to-br from-white to-[#1F3A5F]/5 p-5">
+        <h3 className="mb-3 flex items-center gap-2 text-base font-semibold text-[#1F3A5F] border-b-2 border-[#1F3A5F]/20 pb-2">
+          <svg className="h-5 w-5 text-[#1F3A5F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          Ubicación
+        </h3>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <span className="text-sm font-medium text-[#6B7280]">País:</span>
@@ -109,8 +118,13 @@ export function RecordDetailsContent({
       </div>
 
       {/* Desarrollador */}
-      <div>
-        <h3 className="mb-3 text-base font-semibold text-[#111827]">Desarrollador</h3>
+      <div className="rounded-lg border border-[#E5E7EB] bg-gradient-to-br from-white to-[#F59E0B]/5 p-5">
+        <h3 className="mb-3 flex items-center gap-2 text-base font-semibold text-[#1F3A5F] border-b-2 border-[#F59E0B]/20 pb-2">
+          <svg className="h-5 w-5 text-[#F59E0B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+          Desarrollador
+        </h3>
         <div>
           <span className="text-sm font-medium text-[#6B7280]">Desarrollador:</span>
           <p className="text-[#111827]">{formatValue(details.desarrollador)}</p>
@@ -118,8 +132,13 @@ export function RecordDetailsContent({
       </div>
 
       {/* Fechas */}
-      <div>
-        <h3 className="mb-3 text-base font-semibold text-[#111827]">Fechas</h3>
+      <div className="rounded-lg border border-[#E5E7EB] bg-gradient-to-br from-white to-[#10B981]/5 p-5">
+        <h3 className="mb-3 flex items-center gap-2 text-base font-semibold text-[#1F3A5F] border-b-2 border-[#10B981]/20 pb-2">
+          <svg className="h-5 w-5 text-[#10B981]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          Fechas
+        </h3>
         <div className="grid grid-cols-1 gap-3">
           <div>
             <span className="text-sm font-medium text-[#6B7280]">Fecha Inicio:</span>
@@ -133,8 +152,13 @@ export function RecordDetailsContent({
       </div>
 
       {/* Unidades */}
-      <div>
-        <h3 className="mb-3 text-base font-semibold text-[#111827]">Unidades</h3>
+      <div className="rounded-lg border border-[#E5E7EB] bg-gradient-to-br from-white to-[#10B981]/5 p-5">
+        <h3 className="mb-3 flex items-center gap-2 text-base font-semibold text-[#1F3A5F] border-b-2 border-[#10B981]/20 pb-2">
+          <svg className="h-5 w-5 text-[#10B981]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+          Unidades
+        </h3>
         <div className="grid grid-cols-1 gap-3">
           <div>
             <span className="text-sm font-medium text-[#6B7280]">Total Unidades:</span>
@@ -148,8 +172,13 @@ export function RecordDetailsContent({
       </div>
 
       {/* Precios */}
-      <div>
-        <h3 className="mb-3 text-base font-semibold text-[#111827]">Precios</h3>
+      <div className="rounded-lg border border-[#E5E7EB] bg-gradient-to-br from-white to-[#F59E0B]/5 p-5">
+        <h3 className="mb-3 flex items-center gap-2 text-base font-semibold text-[#1F3A5F] border-b-2 border-[#F59E0B]/20 pb-2">
+          <svg className="h-5 w-5 text-[#F59E0B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Precios
+        </h3>
         <div className="grid grid-cols-1 gap-3">
           <div>
             <span className="text-sm font-medium text-[#6B7280]">Precio Promedio:</span>
@@ -167,8 +196,13 @@ export function RecordDetailsContent({
       </div>
 
       {/* Información Adicional */}
-      <div className="col-span-full">
-        <h3 className="mb-3 text-base font-semibold text-[#111827]">Información Adicional</h3>
+      <div className="col-span-full rounded-lg border border-[#E5E7EB] bg-gradient-to-br from-white to-[#4DA3FF]/5 p-5">
+        <h3 className="mb-3 flex items-center gap-2 text-base font-semibold text-[#1F3A5F] border-b-2 border-[#4DA3FF]/20 pb-2">
+          <svg className="h-5 w-5 text-[#4DA3FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Información Adicional
+        </h3>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <span className="text-sm font-medium text-[#6B7280]">Tipo de Seguridad:</span>

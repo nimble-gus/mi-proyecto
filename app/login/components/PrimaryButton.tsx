@@ -22,7 +22,7 @@ export function PrimaryButton({
       type={type}
       onClick={onClick}
       disabled={disabled || loading}
-      className={`w-full rounded-lg bg-[#1F3A5F] px-6 py-3 text-base font-medium text-white transition-colors hover:bg-[#162943] focus:outline-none focus:ring-2 focus:ring-[#1F3A5F] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-[#1F3A5F] ${className}`}
+      className={`w-full rounded-lg bg-gradient-to-r from-[#4DA3FF] via-[#1F3A5F] to-[#4DA3FF] bg-size-200 bg-pos-0 px-6 py-3 text-base font-semibold text-white shadow-lg transition-all hover:bg-pos-100 hover:shadow-xl hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-[#4DA3FF] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-pos-0 disabled:hover:scale-100 ${className}`}
     >
       {loading ? (
         <span className="flex items-center justify-center gap-2">

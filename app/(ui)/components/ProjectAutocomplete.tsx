@@ -64,7 +64,7 @@ export function ProjectAutocomplete({
     <div className="flex flex-col gap-2" ref={dropdownRef}>
       <label
         htmlFor="project-selector"
-        className="text-sm font-medium text-[#111827]"
+        className="text-sm font-medium text-[#1F3A5F]"
       >
         Proyecto *
       </label>
@@ -80,7 +80,7 @@ export function ProjectAutocomplete({
             placeholder="Escribe para buscar…"
             disabled={!!selectedProject}
             maxLength={200}
-            className="w-full rounded-lg border border-[#E5E7EB] bg-white px-4 py-3 text-base text-[#111827] placeholder:text-[#9CA3AF] focus:border-[#4DA3FF] focus:outline-none focus:ring-2 focus:ring-[#4DA3FF]/20 focus:ring-offset-0 disabled:cursor-not-allowed disabled:bg-[#F3F4F6] disabled:text-[#9CA3AF]"
+            className="w-full rounded-lg border-2 border-[#E5E7EB] bg-white px-4 py-3 text-base text-[#111827] placeholder:text-[#9CA3AF] transition-all focus:border-[#4DA3FF] focus:outline-none focus:ring-2 focus:ring-[#4DA3FF]/30 focus:ring-offset-0 hover:border-[#4DA3FF]/50 disabled:cursor-not-allowed disabled:bg-[#F3F4F6] disabled:text-[#9CA3AF]"
             aria-label="Seleccionar proyecto"
             aria-expanded={isOpen}
             aria-haspopup="listbox"
@@ -90,7 +90,7 @@ export function ProjectAutocomplete({
             <button
               type="button"
               onClick={onClear}
-              className="rounded-lg border border-[#E5E7EB] bg-white px-4 py-3 text-sm font-medium text-[#111827] transition-colors hover:bg-[#F3F4F6]"
+              className="rounded-lg border border-[#4DA3FF] bg-[#4DA3FF]/10 px-4 py-3 text-sm font-medium text-[#4DA3FF] transition-all hover:bg-[#4DA3FF] hover:text-white hover:shadow-md"
               aria-label="Limpiar proyecto"
             >
               Limpiar
@@ -100,7 +100,7 @@ export function ProjectAutocomplete({
 
         {/* Dropdown panel */}
         {isOpen && !selectedProject && (
-          <div className="absolute z-10 mt-2 w-full rounded-lg border border-[#E5E7EB] bg-white shadow-lg">
+          <div className="absolute z-10 mt-2 w-full rounded-lg border border-[#E5E7EB] bg-white shadow-xl ring-1 ring-[#4DA3FF]/10">
             {!query.trim() && !loading && (
               <div className="px-4 py-3 text-center text-sm text-[#9CA3AF]">
                 Escribe para buscar…
@@ -134,7 +134,7 @@ export function ProjectAutocomplete({
                       key={`${project.proyecto}-${index}`}
                       role="option"
                       onClick={() => onSelect(project)}
-                      className="cursor-pointer px-4 py-2 text-sm text-[#111827] transition-colors hover:bg-[#F3F4F6]"
+                      className="cursor-pointer px-4 py-2 text-sm text-[#111827] transition-all hover:bg-gradient-to-r hover:from-[#4DA3FF]/10 hover:to-[#4DA3FF]/5 hover:text-[#1F3A5F] hover:font-medium border-l-2 border-transparent hover:border-[#4DA3FF]"
                       aria-selected={false}
                       title={displayText}
                     >
