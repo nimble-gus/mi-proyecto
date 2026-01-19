@@ -26,8 +26,8 @@ export default function RecordDetailsPage() {
   return (
     <div className="min-h-screen bg-zinc-50 font-sans dark:bg-black">
       <main className="mx-auto max-w-6xl px-4 py-8 lg:px-8">
-        {/* Header con botón volver */}
-        <div className="mb-6 flex items-center gap-4">
+        {/* Header sticky con botón volver, título y editar */}
+        <div className="sticky top-0 z-10 mb-6 flex items-center gap-4 border-b border-zinc-200 bg-zinc-50 py-4 dark:border-zinc-700 dark:bg-black">
           <button
             type="button"
             onClick={handleGoBack}
@@ -48,9 +48,15 @@ export default function RecordDetailsPage() {
             </svg>
             Volver
           </button>
-          <h1 className="text-2xl font-semibold text-black dark:text-zinc-50 lg:text-3xl">
+          <h1 className="flex-1 text-2xl font-semibold text-black dark:text-zinc-50 lg:text-3xl">
             Detalles del Proyecto
           </h1>
+          <button
+            type="button"
+            className="-ml-2 rounded-lg border border-zinc-300 bg-white px-16 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+          >
+            Editar
+          </button>
         </div>
 
         {/* Contenido de detalles */}
@@ -60,6 +66,16 @@ export default function RecordDetailsPage() {
             loadingDetails={loadingDetails}
             errorDetails={errorDetails}
           />
+        </div>
+
+        {/* Footer sticky con botón guardar */}
+        <div className="sticky bottom-0 z-10 mt-6 flex justify-center border-t border-zinc-200 bg-zinc-50 py-4 dark:border-zinc-700 dark:bg-black">
+          <button
+            type="button"
+            className="rounded-lg bg-zinc-900 px-6 py-2 text-base font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-zinc-50 dark:text-black dark:hover:bg-zinc-200"
+          >
+            Guardar
+          </button>
         </div>
       </main>
     </div>
