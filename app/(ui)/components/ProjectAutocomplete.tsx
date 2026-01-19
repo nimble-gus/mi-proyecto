@@ -64,7 +64,7 @@ export function ProjectAutocomplete({
     <div className="flex flex-col gap-2" ref={dropdownRef}>
       <label
         htmlFor="project-selector"
-        className="text-sm font-medium text-black dark:text-zinc-50"
+        className="text-sm font-medium text-[#111827]"
       >
         Proyecto *
       </label>
@@ -80,7 +80,7 @@ export function ProjectAutocomplete({
             placeholder="Escribe para buscar…"
             disabled={!!selectedProject}
             maxLength={200}
-            className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-base text-black placeholder:text-zinc-500 focus:border-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:placeholder:text-zinc-500 dark:focus:border-zinc-500 dark:disabled:bg-zinc-800 dark:disabled:text-zinc-400"
+            className="w-full rounded-lg border border-[#E5E7EB] bg-white px-4 py-3 text-base text-[#111827] placeholder:text-[#9CA3AF] focus:border-[#4DA3FF] focus:outline-none focus:ring-2 focus:ring-[#4DA3FF]/20 focus:ring-offset-0 disabled:cursor-not-allowed disabled:bg-[#F3F4F6] disabled:text-[#9CA3AF]"
             aria-label="Seleccionar proyecto"
             aria-expanded={isOpen}
             aria-haspopup="listbox"
@@ -90,7 +90,7 @@ export function ProjectAutocomplete({
             <button
               type="button"
               onClick={onClear}
-              className="rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              className="rounded-lg border border-[#E5E7EB] bg-white px-4 py-3 text-sm font-medium text-[#111827] transition-colors hover:bg-[#F3F4F6]"
               aria-label="Limpiar proyecto"
             >
               Limpiar
@@ -100,27 +100,27 @@ export function ProjectAutocomplete({
 
         {/* Dropdown panel */}
         {isOpen && !selectedProject && (
-          <div className="absolute z-10 mt-2 w-full rounded-lg border border-zinc-200 bg-white shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
+          <div className="absolute z-10 mt-2 w-full rounded-lg border border-[#E5E7EB] bg-white shadow-lg">
             {!query.trim() && !loading && (
-              <div className="px-4 py-3 text-center text-sm text-zinc-500 dark:text-zinc-400">
+              <div className="px-4 py-3 text-center text-sm text-[#9CA3AF]">
                 Escribe para buscar…
               </div>
             )}
 
             {loading && (
-              <div className="px-4 py-3 text-center text-sm text-zinc-600 dark:text-zinc-400">
+              <div className="px-4 py-3 text-center text-sm text-[#6B7280]">
                 Buscando…
               </div>
             )}
 
             {error && !loading && (
-              <div className="px-4 py-3 text-center text-sm text-red-600 dark:text-red-400">
+              <div className="px-4 py-3 text-center text-sm text-[#EF4444]">
                 {error}
               </div>
             )}
 
             {!loading && !error && query.trim() && options.length === 0 && (
-              <div className="px-4 py-3 text-center text-sm text-zinc-600 dark:text-zinc-400">
+              <div className="px-4 py-3 text-center text-sm text-[#6B7280]">
                 No hay coincidencias
               </div>
             )}
@@ -134,10 +134,11 @@ export function ProjectAutocomplete({
                       key={`${project.proyecto}-${index}`}
                       role="option"
                       onClick={() => onSelect(project)}
-                      className="cursor-pointer px-4 py-2 text-sm text-black transition-colors hover:bg-zinc-100 dark:text-zinc-50 dark:hover:bg-zinc-800"
+                      className="cursor-pointer px-4 py-2 text-sm text-[#111827] transition-colors hover:bg-[#F3F4F6]"
                       aria-selected={false}
+                      title={displayText}
                     >
-                      {displayText}
+                      <span className="truncate block">{displayText}</span>
                     </li>
                   );
                 })}

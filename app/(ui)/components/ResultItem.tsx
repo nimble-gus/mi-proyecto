@@ -9,13 +9,13 @@ interface ResultItemProps {
 
 export function ResultItem({ project }: ResultItemProps) {
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="rounded-lg border border-[#E5E7EB] bg-white p-4 shadow-sm transition-shadow hover:shadow-md">
       <div className="flex items-start justify-between gap-4">
-        <div className="flex flex-col gap-2 flex-1">
-          <h3 className="text-lg font-semibold text-black dark:text-zinc-50">
+        <div className="flex flex-1 flex-col gap-2">
+          <h3 className="text-lg font-semibold text-[#111827]">
             {project.proyecto}
           </h3>
-          <div className="flex flex-wrap gap-4 text-sm text-zinc-600 dark:text-zinc-400">
+          <div className="flex flex-wrap gap-4 text-sm text-[#6B7280]">
             <div>
               <span className="font-medium">Categoría:</span> {project.categoria}
             </div>
@@ -34,7 +34,7 @@ export function ResultItem({ project }: ResultItemProps) {
         </div>
         <Link
           href={`/records/${project.id}`}
-          className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 whitespace-nowrap"
+          className="whitespace-nowrap rounded-lg border border-[#E5E7EB] bg-white px-4 py-2 text-sm font-medium text-[#111827] transition-colors hover:bg-[#F3F4F6]"
         >
           Ver detalles
         </Link>

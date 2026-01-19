@@ -70,9 +70,9 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="flex min-h-screen flex-col bg-zinc-50 font-sans lg:flex-row dark:bg-black">
+    <div className="flex min-h-screen flex-col bg-white font-sans lg:flex-row">
       {/* Sidebar de Filtros - Mobile: arriba, Desktop: izquierda */}
-      <aside className="w-full border-b border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900 lg:sticky lg:top-0 lg:h-screen lg:w-80 lg:border-b-0 lg:border-r lg:overflow-y-auto">
+      <aside className="w-full border-b border-[#E5E7EB] bg-[#F3F4F6] p-4 lg:sticky lg:top-0 lg:h-screen lg:w-80 lg:border-b-0 lg:border-r lg:overflow-y-auto">
         <FiltersBar
           zones={catalogs.zones}
           categories={catalogs.categories}
@@ -93,10 +93,10 @@ export default function Home() {
       <main className="flex flex-1 flex-col gap-6 p-4 lg:p-8">
         {/* Header */}
         <div className="flex flex-col gap-2">
-          <h1 className="text-2xl font-semibold text-black dark:text-zinc-50 lg:text-3xl">
+          <h1 className="text-2xl font-semibold text-[#111827] lg:text-3xl">
             Filtrado de Proyectos
           </h1>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400 lg:text-base">
+          <p className="text-sm text-[#6B7280] lg:text-base">
             Selecciona un proyecto para ver resultados filtrados
           </p>
         </div>
@@ -121,8 +121,8 @@ export default function Home() {
         {/* Área de Resultados */}
         <div className="flex flex-1 flex-col gap-4">
           {!selectedProject && (
-            <div className="flex flex-1 items-center justify-center rounded-lg border border-zinc-200 bg-white p-12 text-center dark:border-zinc-700 dark:bg-zinc-900">
-              <p className="text-zinc-600 dark:text-zinc-400">
+            <div className="flex flex-1 items-center justify-center rounded-lg border border-[#E5E7EB] bg-white p-12 text-center">
+              <p className="text-[#6B7280]">
                 Selecciona un proyecto para ver resultados
               </p>
             </div>

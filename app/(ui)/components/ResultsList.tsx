@@ -28,11 +28,11 @@ export function ResultsList({
   return (
     <div className="flex flex-1 flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-medium text-black dark:text-zinc-50">
+        <h2 className="text-lg font-medium text-[#111827]">
           Resultados
         </h2>
         {totalItems > 0 && (
-          <span className="text-sm text-zinc-600 dark:text-zinc-400">
+          <span className="text-sm text-[#6B7280]">
             {totalItems} {totalItems === 1 ? "resultado" : "resultados"}
           </span>
         )}
@@ -40,22 +40,22 @@ export function ResultsList({
 
       {/* Loading mientras consulta */}
       {loadingResults && (
-        <div className="flex flex-1 items-center justify-center rounded-lg border border-zinc-200 bg-white p-12 text-center dark:border-zinc-700 dark:bg-zinc-900">
-          <p className="text-zinc-600 dark:text-zinc-400">Cargando resultados...</p>
+        <div className="flex flex-1 items-center justify-center rounded-lg border border-[#E5E7EB] bg-white p-12 text-center">
+          <p className="text-[#6B7280]">Cargando resultados...</p>
         </div>
       )}
 
       {/* Mensaje de error */}
       {error && !loadingResults && (
-        <div className="flex flex-1 items-center justify-center rounded-lg border border-red-200 bg-red-50 p-12 text-center dark:border-red-800 dark:bg-red-900/20">
-          <p className="text-red-600 dark:text-red-400">{error}</p>
+        <div className="flex flex-1 items-center justify-center rounded-lg border border-[#EF4444]/30 bg-[#FEE2E2] p-12 text-center">
+          <p className="text-[#DC2626]">{error}</p>
         </div>
       )}
 
       {/* Sin resultados */}
       {!loadingResults && !error && items.length === 0 && totalItems === 0 && (
-        <div className="flex flex-1 items-center justify-center rounded-lg border border-zinc-200 bg-white p-12 text-center dark:border-zinc-700 dark:bg-zinc-900">
-          <p className="text-zinc-600 dark:text-zinc-400">No hay resultados con esos filtros</p>
+        <div className="flex flex-1 items-center justify-center rounded-lg border border-[#E5E7EB] bg-white p-12 text-center">
+          <p className="text-[#6B7280]">No hay resultados con esos filtros</p>
         </div>
       )}
 

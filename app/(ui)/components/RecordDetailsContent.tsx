@@ -18,7 +18,7 @@ export function RecordDetailsContent({
   if (loadingDetails) {
     return (
       <div className="flex items-center justify-center py-12">
-        <p className="text-zinc-600 dark:text-zinc-400">Cargando detalles...</p>
+        <p className="text-[#6B7280]">Cargando detalles...</p>
       </div>
     );
   }
@@ -26,8 +26,8 @@ export function RecordDetailsContent({
   // Estado de error
   if (errorDetails && !loadingDetails) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-center dark:border-red-800 dark:bg-red-900/20">
-        <p className="text-red-600 dark:text-red-400">{errorDetails}</p>
+      <div className="rounded-lg border border-[#EF4444]/30 bg-[#FEE2E2] p-4 text-center">
+        <p className="text-[#DC2626]">{errorDetails}</p>
       </div>
     );
   }
@@ -35,8 +35,8 @@ export function RecordDetailsContent({
   // Sin detalles
   if (!details) {
     return (
-      <div className="rounded-lg border border-zinc-200 bg-white p-8 text-center dark:border-zinc-700 dark:bg-zinc-900">
-        <p className="text-zinc-600 dark:text-zinc-400">No se encontraron detalles</p>
+      <div className="rounded-lg border border-[#E5E7EB] bg-white p-8 text-center">
+        <p className="text-[#6B7280]">No se encontraron detalles</p>
       </div>
     );
   }
@@ -46,139 +46,139 @@ export function RecordDetailsContent({
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       {/* Información Básica */}
       <div className="col-span-full">
-        <h3 className="mb-3 text-lg font-semibold text-black dark:text-zinc-50">
+        <h3 className="mb-3 text-base font-semibold text-[#111827]">
           Información Básica
         </h3>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
-            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Proyecto:</span>
-            <p className="text-black dark:text-zinc-50">{formatValue(details.proyecto)}</p>
+            <span className="text-sm font-medium text-[#6B7280]">Proyecto:</span>
+            <p className="text-[#111827]">{formatValue(details.proyecto)}</p>
           </div>
           <div>
-            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Fase:</span>
-            <p className="text-black dark:text-zinc-50">{formatValue(details.fase)}</p>
+            <span className="text-sm font-medium text-[#6B7280]">Fase:</span>
+            <p className="text-[#111827]">{formatValue(details.fase)}</p>
           </div>
           <div>
-            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Torre:</span>
-            <p className="text-black dark:text-zinc-50">{formatValue(details.torre)}</p>
+            <span className="text-sm font-medium text-[#6B7280]">Torre:</span>
+            <p className="text-[#111827]">{formatValue(details.torre)}</p>
           </div>
           <div>
-            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Período:</span>
-            <p className="text-black dark:text-zinc-50">{formatValue(details.periodo)}</p>
+            <span className="text-sm font-medium text-[#6B7280]">Período:</span>
+            <p className="text-[#111827]">{formatValue(details.periodo)}</p>
           </div>
           <div>
-            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Categoría:</span>
-            <p className="text-black dark:text-zinc-50">{formatValue(details.categoria)}</p>
+            <span className="text-sm font-medium text-[#6B7280]">Categoría:</span>
+            <p className="text-[#111827]">{formatValue(details.categoria)}</p>
           </div>
           <div>
-            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Estado:</span>
-            <p className="text-black dark:text-zinc-50">{formatValue(details.estado)}</p>
+            <span className="text-sm font-medium text-[#6B7280]">Estado:</span>
+            <p className="text-[#111827]">{formatValue(details.estado)}</p>
           </div>
         </div>
       </div>
 
       {/* Ubicación */}
       <div className="col-span-full">
-        <h3 className="mb-3 text-lg font-semibold text-black dark:text-zinc-50">Ubicación</h3>
+        <h3 className="mb-3 text-base font-semibold text-[#111827]">Ubicación</h3>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
-            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">País:</span>
-            <p className="text-black dark:text-zinc-50">{formatValue(details.pais)}</p>
+            <span className="text-sm font-medium text-[#6B7280]">País:</span>
+            <p className="text-[#111827]">{formatValue(details.pais)}</p>
           </div>
           <div>
-            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Departamento:</span>
-            <p className="text-black dark:text-zinc-50">{formatValue(details.departamento)}</p>
+            <span className="text-sm font-medium text-[#6B7280]">Departamento:</span>
+            <p className="text-[#111827]">{formatValue(details.departamento)}</p>
           </div>
           <div>
-            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Municipio:</span>
-            <p className="text-black dark:text-zinc-50">{formatValue(details.municipio)}</p>
+            <span className="text-sm font-medium text-[#6B7280]">Municipio:</span>
+            <p className="text-[#111827]">{formatValue(details.municipio)}</p>
           </div>
           <div>
-            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Zona:</span>
-            <p className="text-black dark:text-zinc-50">{formatValue(details.zona)}</p>
+            <span className="text-sm font-medium text-[#6B7280]">Zona:</span>
+            <p className="text-[#111827]">{formatValue(details.zona)}</p>
           </div>
         </div>
       </div>
 
       {/* Desarrollador */}
       <div>
-        <h3 className="mb-3 text-lg font-semibold text-black dark:text-zinc-50">Desarrollador</h3>
+        <h3 className="mb-3 text-base font-semibold text-[#111827]">Desarrollador</h3>
         <div>
-          <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Desarrollador:</span>
-          <p className="text-black dark:text-zinc-50">{formatValue(details.desarrollador)}</p>
+          <span className="text-sm font-medium text-[#6B7280]">Desarrollador:</span>
+          <p className="text-[#111827]">{formatValue(details.desarrollador)}</p>
         </div>
       </div>
 
       {/* Fechas */}
       <div>
-        <h3 className="mb-3 text-lg font-semibold text-black dark:text-zinc-50">Fechas</h3>
+        <h3 className="mb-3 text-base font-semibold text-[#111827]">Fechas</h3>
         <div className="grid grid-cols-1 gap-3">
           <div>
-            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Fecha Inicio:</span>
-            <p className="text-black dark:text-zinc-50">{formatDate(details.fecha_inicio)}</p>
+            <span className="text-sm font-medium text-[#6B7280]">Fecha Inicio:</span>
+            <p className="text-[#111827]">{formatDate(details.fecha_inicio)}</p>
           </div>
           <div>
-            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Fecha Entrega:</span>
-            <p className="text-black dark:text-zinc-50">{formatDate(details.fecha_entrega)}</p>
+            <span className="text-sm font-medium text-[#6B7280]">Fecha Entrega:</span>
+            <p className="text-[#111827]">{formatDate(details.fecha_entrega)}</p>
           </div>
         </div>
       </div>
 
       {/* Unidades */}
       <div>
-        <h3 className="mb-3 text-lg font-semibold text-black dark:text-zinc-50">Unidades</h3>
+        <h3 className="mb-3 text-base font-semibold text-[#111827]">Unidades</h3>
         <div className="grid grid-cols-1 gap-3">
           <div>
-            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Total Unidades:</span>
-            <p className="text-black dark:text-zinc-50">{formatValue(details.total_unidades ?? 0)}</p>
+            <span className="text-sm font-medium text-[#6B7280]">Total Unidades:</span>
+            <p className="text-[#111827]">{formatValue(details.total_unidades ?? 0)}</p>
           </div>
           <div>
-            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Unidades Disponibles:</span>
-            <p className="text-black dark:text-zinc-50">{formatValue(details.unidades_disponibles ?? 0)}</p>
+            <span className="text-sm font-medium text-[#6B7280]">Unidades Disponibles:</span>
+            <p className="text-[#111827]">{formatValue(details.unidades_disponibles ?? 0)}</p>
           </div>
         </div>
       </div>
 
       {/* Precios */}
       <div>
-        <h3 className="mb-3 text-lg font-semibold text-black dark:text-zinc-50">Precios</h3>
+        <h3 className="mb-3 text-base font-semibold text-[#111827]">Precios</h3>
         <div className="grid grid-cols-1 gap-3">
           <div>
-            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Precio Promedio:</span>
-            <p className="text-black dark:text-zinc-50">{formatValue(details.precio_promedio)}</p>
+            <span className="text-sm font-medium text-[#6B7280]">Precio Promedio:</span>
+            <p className="text-[#111827]">{formatValue(details.precio_promedio)}</p>
           </div>
           <div>
-            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Cuota Promedio:</span>
-            <p className="text-black dark:text-zinc-50">{formatValue(details.cuota_promedio)}</p>
+            <span className="text-sm font-medium text-[#6B7280]">Cuota Promedio:</span>
+            <p className="text-[#111827]">{formatValue(details.cuota_promedio)}</p>
           </div>
           <div>
-            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Ingresos Promedio:</span>
-            <p className="text-black dark:text-zinc-50">{formatValue(details.ingresos_promedio)}</p>
+            <span className="text-sm font-medium text-[#6B7280]">Ingresos Promedio:</span>
+            <p className="text-[#111827]">{formatValue(details.ingresos_promedio)}</p>
           </div>
         </div>
       </div>
 
       {/* Información Adicional */}
       <div className="col-span-full">
-        <h3 className="mb-3 text-lg font-semibold text-black dark:text-zinc-50">Información Adicional</h3>
+        <h3 className="mb-3 text-base font-semibold text-[#111827]">Información Adicional</h3>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
-            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Tipo de Seguridad:</span>
-            <p className="text-black dark:text-zinc-50">{formatValue(details.tipo_de_seguridad)}</p>
+            <span className="text-sm font-medium text-[#6B7280]">Tipo de Seguridad:</span>
+            <p className="text-[#111827]">{formatValue(details.tipo_de_seguridad)}</p>
           </div>
           <div>
-            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Cantidad Accesos:</span>
-            <p className="text-black dark:text-zinc-50">{formatValue(details.cantidad_accesos)}</p>
+            <span className="text-sm font-medium text-[#6B7280]">Cantidad Accesos:</span>
+            <p className="text-[#111827]">{formatValue(details.cantidad_accesos)}</p>
           </div>
           <div className="col-span-full">
-            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">URL Imagen:</span>
-            <p className="break-all text-black dark:text-zinc-50">
+            <span className="text-sm font-medium text-[#6B7280]">URL Imagen:</span>
+            <p className="break-all text-[#111827]">
               {details.url_imagen ? (
                 <a
                   href={details.url_imagen}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline dark:text-blue-400"
+                  className="text-[#4DA3FF] hover:underline"
                 >
                   {details.url_imagen}
                 </a>

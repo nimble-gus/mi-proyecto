@@ -24,7 +24,7 @@ export function Pagination({
 
   return (
     <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
-      <div className="text-sm text-zinc-600 dark:text-zinc-400">
+      <div className="text-sm text-[#6B7280]">
         Mostrando {startItem} - {endItem} de {totalItems} resultados
       </div>
       
@@ -33,14 +33,14 @@ export function Pagination({
           type="button"
           onClick={onPrevious}
           disabled={page === 1}
-          className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:disabled:hover:bg-zinc-900"
+          className="rounded-lg border border-[#E5E7EB] bg-white px-4 py-2 text-sm font-medium text-[#111827] transition-colors hover:bg-[#F3F4F6] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white"
           aria-label="Página anterior"
         >
           Anterior
         </button>
 
         <div className="flex items-center gap-1">
-          <span className="px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          <span className="px-4 py-2 text-sm font-medium text-[#111827]">
             Página {page} de {totalPages}
           </span>
         </div>
@@ -49,7 +49,7 @@ export function Pagination({
           type="button"
           onClick={onNext}
           disabled={page >= totalPages}
-          className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:disabled:hover:bg-zinc-900"
+          className="rounded-lg border border-[#E5E7EB] bg-white px-4 py-2 text-sm font-medium text-[#111827] transition-colors hover:bg-[#F3F4F6] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white"
           aria-label="Página siguiente"
         >
           Siguiente

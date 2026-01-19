@@ -24,14 +24,14 @@ export default function RecordDetailsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 font-sans dark:bg-black">
+    <div className="min-h-screen bg-white font-sans">
       <main className="mx-auto max-w-6xl px-4 py-8 lg:px-8">
         {/* Header sticky con botón volver, título y editar */}
-        <div className="sticky top-0 z-10 mb-6 flex items-center gap-4 border-b border-zinc-200 bg-zinc-50 py-4 dark:border-zinc-700 dark:bg-black">
+        <div className="sticky top-0 z-10 mb-6 flex items-center gap-4 border-b border-[#E5E7EB] bg-white py-4">
           <button
             type="button"
             onClick={handleGoBack}
-            className="flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            className="flex items-center gap-2 rounded-lg border border-[#E5E7EB] bg-white px-4 py-2 text-sm font-medium text-[#111827] transition-colors hover:bg-[#F3F4F6]"
           >
             <svg
               className="h-5 w-5"
@@ -48,19 +48,19 @@ export default function RecordDetailsPage() {
             </svg>
             Volver
           </button>
-          <h1 className="flex-1 text-2xl font-semibold text-black dark:text-zinc-50 lg:text-3xl">
+          <h1 className="flex-1 text-2xl font-semibold text-[#111827] lg:text-3xl">
             Detalles del Proyecto
           </h1>
           <button
             type="button"
-            className="-ml-2 rounded-lg border border-zinc-300 bg-white px-16 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            className="-ml-2 rounded-lg border border-[#E5E7EB] bg-white px-16 py-2 text-sm font-medium text-[#111827] transition-colors hover:bg-[#F3F4F6]"
           >
             Editar
           </button>
         </div>
 
         {/* Contenido de detalles */}
-        <div className="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
+        <div className="rounded-lg border border-[#E5E7EB] bg-white p-6 shadow-sm">
           <RecordDetailsContent
             details={details}
             loadingDetails={loadingDetails}
@@ -68,11 +68,35 @@ export default function RecordDetailsPage() {
           />
         </div>
 
+        {/* Imagen del proyecto */}
+        {details && details.url_imagen && (
+          <div className="mt-6 rounded-lg border border-[#E5E7EB] bg-white p-6 shadow-sm">
+            <h2 className="mb-4 text-xl font-semibold text-[#111827]">
+              Imagen del Proyecto
+            </h2>
+            <div className="flex justify-center">
+              <img
+                src={details.url_imagen}
+                alt={`Imagen de ${details.proyecto}`}
+                className="max-h-[600px] w-full rounded-lg object-contain"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = "none";
+                  const parent = target.parentElement;
+                  if (parent) {
+                    parent.innerHTML = '<p class="text-[#6B7280] text-center py-8">No se pudo cargar la imagen</p>';
+                  }
+                }}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Footer sticky con botón guardar */}
-        <div className="sticky bottom-0 z-10 mt-6 flex justify-center border-t border-zinc-200 bg-zinc-50 py-4 dark:border-zinc-700 dark:bg-black">
+        <div className="sticky bottom-0 z-10 mt-6 flex justify-center border-t border-[#E5E7EB] bg-white py-4">
           <button
             type="button"
-            className="rounded-lg bg-zinc-900 px-6 py-2 text-base font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-zinc-50 dark:text-black dark:hover:bg-zinc-200"
+            className="rounded-lg bg-[#1F3A5F] px-6 py-2 text-base font-medium text-white transition-colors hover:bg-[#162943]"
           >
             Guardar
           </button>

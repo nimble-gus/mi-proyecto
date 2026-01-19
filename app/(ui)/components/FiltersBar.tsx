@@ -43,18 +43,18 @@ export function FiltersBar({
 
   return (
     <div className="flex min-h-full flex-col gap-4 lg:h-full">
-      <h2 className="text-lg font-semibold text-black dark:text-zinc-50">
+      <h2 className="text-base font-medium text-[#111827]">
         Filtros
       </h2>
       
       {!hasSelectedProject && (
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="text-sm text-[#6B7280]">
           Selecciona un proyecto para habilitar filtros
         </p>
       )}
 
       {loadingCatalogues && hasSelectedProject && (
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="text-sm text-[#6B7280]">
           Cargando filtros...
         </p>
       )}
@@ -63,7 +63,7 @@ export function FiltersBar({
         <div className="flex flex-col gap-2">
           <label
             htmlFor="zone-selector"
-            className="text-sm font-medium text-black dark:text-zinc-50"
+            className="text-sm font-medium text-[#111827]"
           >
             Zona
           </label>
@@ -72,7 +72,7 @@ export function FiltersBar({
             value={selectedZone}
             onChange={handleZoneChange}
             disabled={isDisabled || zones.length === 0}
-            className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-base text-black focus:border-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-zinc-500 dark:disabled:bg-zinc-800 dark:disabled:text-zinc-400"
+            className="w-full rounded-lg border border-[#E5E7EB] bg-white px-4 py-3 text-base text-[#111827] focus:border-[#4DA3FF] focus:outline-none focus:ring-2 focus:ring-[#4DA3FF]/20 focus:ring-offset-0 disabled:cursor-not-allowed disabled:bg-[#F3F4F6] disabled:text-[#9CA3AF]"
           >
             <option value="">Todas las zonas</option>
             {zones.map((zone) => (
@@ -86,7 +86,7 @@ export function FiltersBar({
         <div className="flex flex-col gap-2">
           <label
             htmlFor="category-selector"
-            className="text-sm font-medium text-black dark:text-zinc-50"
+            className="text-sm font-medium text-[#111827]"
           >
             Categoría
           </label>
@@ -95,7 +95,7 @@ export function FiltersBar({
             value={selectedCategory}
             onChange={handleCategoryChange}
             disabled={isDisabled || categories.length === 0}
-            className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-base text-black focus:border-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-zinc-500 dark:disabled:bg-zinc-800 dark:disabled:text-zinc-400"
+            className="w-full rounded-lg border border-[#E5E7EB] bg-white px-4 py-3 text-base text-[#111827] focus:border-[#4DA3FF] focus:outline-none focus:ring-2 focus:ring-[#4DA3FF]/20 focus:ring-offset-0 disabled:cursor-not-allowed disabled:bg-[#F3F4F6] disabled:text-[#9CA3AF]"
           >
             <option value="">Todas las categorías</option>
             {categories.map((category) => (
@@ -109,7 +109,7 @@ export function FiltersBar({
         <div className="flex flex-col gap-2">
           <label
             htmlFor="period-selector"
-            className="text-sm font-medium text-black dark:text-zinc-50"
+            className="text-sm font-medium text-[#111827]"
           >
             Período
           </label>
@@ -118,7 +118,7 @@ export function FiltersBar({
             value={selectedPeriod}
             onChange={handlePeriodChange}
             disabled={isDisabled || periods.length === 0}
-            className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-base text-black focus:border-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-zinc-500 dark:disabled:bg-zinc-800 dark:disabled:text-zinc-400"
+            className="w-full rounded-lg border border-[#E5E7EB] bg-white px-4 py-3 text-base text-[#111827] focus:border-[#4DA3FF] focus:outline-none focus:ring-2 focus:ring-[#4DA3FF]/20 focus:ring-offset-0 disabled:cursor-not-allowed disabled:bg-[#F3F4F6] disabled:text-[#9CA3AF]"
           >
             <option value="">Todos los períodos</option>
             {periods.map((period) => (
@@ -134,7 +134,7 @@ export function FiltersBar({
         <button
           type="button"
           onClick={onClearFilters}
-          className="mt-auto rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+          className="mt-auto text-sm font-medium text-[#4DA3FF] transition-colors hover:text-[#1F3A5F] hover:underline"
         >
           Limpiar filtros
         </button>
