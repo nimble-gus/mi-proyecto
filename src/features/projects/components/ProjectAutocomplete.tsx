@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { Project, SelectedProject } from "@/src/types/domain";
+import { Project, SelectedProject } from "../types/domain";
 
 interface ProjectAutocompleteProps {
   query: string;

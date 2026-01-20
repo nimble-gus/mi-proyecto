@@ -1,6 +1,6 @@
-import { Project } from "@/src/types/domain";
+import { Project } from "../types/domain";
 import { ResultItem } from "./ResultItem";
-import { Pagination } from "./Pagination";
+import { Pagination } from "@/src/shared/components/data";
 
 interface ResultsListProps {
   items: Project[];

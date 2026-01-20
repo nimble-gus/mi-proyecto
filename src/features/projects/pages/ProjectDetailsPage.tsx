@@ -2,15 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useRecordDetails } from "@/src/hooks/useRecordDetails";
-import { useUpdateRecord } from "@/src/hooks/useUpdateRecord";
-import { RecordDetailsContent } from "../../components/RecordDetailsContent";
-import { RecordDetails } from "@/src/types/domain";
+import { useRecordDetails } from "../hooks/useRecordDetails";
+import { useUpdateRecord } from "../hooks/useUpdateRecord";
+import { RecordDetailsContent } from "@/src/shared/components/details/RecordDetailsContent";
+import { RecordDetails } from "../types/domain";
 
-export default function RecordDetailsPage() {
-  const params = useParams();
+interface ProjectDetailsPageProps {
+  id: string;
+}
+
+export function ProjectDetailsPage({ id }: ProjectDetailsPageProps) {
   const router = useRouter();
-  const id = params.id as string;
 
   const { details, loadingDetails, errorDetails, loadDetails } = useRecordDetails();
   const { updateRecord, loading: updating, error: updateError, success: updateSuccess, resetState } = useUpdateRecord();
@@ -110,12 +112,12 @@ export default function RecordDetailsPage() {
         // Recargar los detalles actualizados
         loadDetails(recordId);
         setIsEditing(false);
+        setOriginalData(null);
         
         // Limpiar el mensaje después de 8 segundos (más tiempo según README)
         // El usuario puede cerrarlo manualmente antes con el botón X
         const timeoutId = setTimeout(() => {
           setSavedChanges(null);
-          setOriginalData(null);
           resetState();
         }, 8000);
         

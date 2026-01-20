@@ -17,75 +17,102 @@ La interfaz está organizada en un diseño de **2 columnas**: un **panel lateral
 
 ## 📁 Arquitectura del Proyecto
 
+Este proyecto sigue una **arquitectura orientada a módulos (feature-based)**, separando la lógica por dominio y centralizando elementos reutilizables. Para más detalles, consulta [`ARCHITECTURE.md`](./ARCHITECTURE.md).
+
 ```
 mi-proyecto/
-├── app/
-│   ├── page.tsx                        # Router inteligente (raíz /) - verifica autenticación y redirige
+├── app/                          # Solo rutas, layouts y API routes (Next.js)
+│   ├── page.tsx                 # Router inteligente (raíz /) - verifica autenticación y redirige
 │   ├── login/
-│   │   ├── page.tsx                    # Página de Login (/login) - formulario completo de autenticación
-│   │   └── components/
-│   │       ├── AuthIntro.tsx           # Panel izquierdo informativo
-│   │       ├── AuthCard.tsx            # Contenedor del formulario
-│   │       ├── AuthTabs.tsx            # Tabs Login/Register
-│   │       ├── LoginForm.tsx           # Formulario de login
-│   │       ├── RegisterForm.tsx        # Formulario de registro
-│   │       ├── TextInput.tsx           # Input de texto reutilizable
-│   │       ├── PasswordInput.tsx       # Input de contraseña reutilizable
-│   │       └── PrimaryButton.tsx       # Botón principal reutilizable
+│   │   └── page.tsx             # Página de login (solo composición → AuthPage)
 │   ├── search/
-│   │   └── page.tsx                    # Página principal de búsqueda (/search)
-│   ├── (ui)/
-│   │   └── components/
-│   │       ├── ProjectAutocomplete.tsx # Selector de proyecto con autocomplete
-│   │       ├── FiltersBar.tsx          # Filtros de zona, categoría y período
-│   │       ├── ResultsList.tsx         # Lista de resultados paginados
-│   │       ├── ResultItem.tsx          # Item individual (proyecto, categoría, zona, período)
-│   │       ├── RecordDetailsContent.tsx # Contenido de detalles y edición reutilizable
-│   │       └── Pagination.tsx          # Componente de paginación (5 por página)
+│   │   └── page.tsx             # Página de búsqueda (solo composición → SearchProjectsPage)
 │   ├── records/
 │   │   └── [id]/
-│   │       └── page.tsx                # Página de detalles y edición del proyecto (/records/[id])
-│   ├── api/
+│   │       └── page.tsx         # Página de detalles (solo composición → ProjectDetailsPage)
+│   ├── api/                     # API Routes de Next.js
 │   │   ├── projects/
-│   │   │   └── route.ts                # GET /api/projects - Búsqueda por prefijo
+│   │   │   └── route.ts         # GET /api/projects - Búsqueda por prefijo
 │   │   ├── zones/
-│   │   │   └── route.ts                # GET /api/zones - Catálogo de zonas
+│   │   │   └── route.ts         # GET /api/zones - Catálogo de zonas
 │   │   ├── categories/
-│   │   │   └── route.ts                # GET /api/categories - Catálogo categorías
+│   │   │   └── route.ts         # GET /api/categories - Catálogo categorías
 │   │   ├── periods/
-│   │   │   └── route.ts                # GET /api/periods - Catálogo de períodos
+│   │   │   └── route.ts         # GET /api/periods - Catálogo de períodos
 │   │   └── records/
-│   │       ├── route.ts                # GET /api/records - Resultados paginados
+│   │       ├── route.ts         # GET /api/records - Resultados paginados (calcula total_unidades y unidades_disponibles)
 │   │       └── [id]/
-│   │           └── route.ts            # GET/PUT /api/records/[id] - Detalles y actualización de campos editables
-│   ├── layout.tsx                      # Layout raíz con tipografía Inter
-│   └── globals.css                     # Estilos globales y paleta de colores
+│   │           └── route.ts     # GET/PUT /api/records/[id] - Detalles y actualización
+│   ├── layout.tsx              # Layout raíz con tipografía Inter
+│   └── globals.css             # Estilos globales y paleta de colores
+│
 ├── src/
-│   ├── hooks/
-│   │   ├── useAuth.ts                  # Hook: autenticación (login/register)
-│   │   ├── useProjectAutocomplete.ts   # Hook: autocomplete + debounce (300ms)
-│   │   ├── useCatalogs.ts              # Hook: carga automática de catálogos
-│   │   ├── useRecordsSearch.ts         # Hook: búsqueda paginada (5 por página)
-│   │   ├── useRecordDetails.ts         # Hook: detalles + cache en memoria
-│   │   └── useUpdateRecord.ts          # Hook: actualización de registro (PUT /api/records/[id])
-│   ├── lib/
-│   │   ├── prisma.ts                  # PrismaClient singleton
-│   │   ├── api/
-│   │   │   ├── projects.api.ts         # API: searchProjects(query)
-│   │   │   ├── catalogs.api.ts        # API: getZones, getCategories, getPeriods
-│   │   │   └── records.api.ts         # API: searchRecords, getRecordDetails, updateRecordDetails
-│   │   └── utils/
-│   │       └── formatters.ts           # Funciones: formatValue, formatDate
-│   └── types/
-│       ├── domain.ts                  # Tipos: Project, SelectedProject, RecordDetails
-│       └── api.ts                     # Tipos: respuestas de API
+│   ├── features/                # Módulos por dominio
+│   │   ├── projects/            # Módulo de Proyectos
+│   │   │   ├── components/      # ProjectAutocomplete, FiltersBar, ResultItem, ResultsList
+│   │   │   ├── hooks/           # useProjectAutocomplete, useCatalogs, useRecordsSearch, useRecordDetails, useUpdateRecord
+│   │   │   ├── api/             # projects.api.ts, catalogs.api.ts, records.api.ts
+│   │   │   ├── types/           # domain.ts (Project, SelectedProject, RecordDetails)
+│   │   │   └── pages/           # SearchProjectsPage, ProjectDetailsPage
+│   │   ├── units/               # Módulo de Unidades (preparado, vacío)
+│   │   │   ├── components/
+│   │   │   ├── hooks/
+│   │   │   ├── api/
+│   │   │   └── types/
+│   │   └── auth/                 # Módulo de Autenticación
+│   │       ├── components/      # AuthCard, AuthIntro, AuthTabs, LoginForm, RegisterForm
+│   │       ├── hooks/           # useAuth
+│   │       ├── api/
+│   │       ├── types/
+│   │       └── pages/           # AuthPage
+│   │
+│   └── shared/                  # Elementos transversales reutilizables
+│       ├── components/          # Componentes UI genéricos
+│       │   ├── data/            # Pagination, ResultsPanel
+│       │   ├── forms/           # TextInput, PasswordInput, PrimaryButton
+│       │   ├── feedback/        # LoadingState, ErrorState, EmptyState
+│       │   └── details/         # RecordDetailsContent
+│       ├── hooks/               # Hooks genéricos (si los hay)
+│       ├── lib/                 # Utilidades de biblioteca
+│       │   └── prisma.ts        # PrismaClient singleton
+│       ├── types/               # Tipos compartidos
+│       │   └── api.ts           # Tipos de respuestas de API
+│       └── utils/               # Utilidades generales
+│           └── formatters.ts    # Funciones de formateo
+│
 ├── generated/
-│   └── prisma/                        # Cliente de Prisma generado
+│   └── prisma/                  # Cliente de Prisma generado
 ├── prisma/
-│   └── schema.prisma                  # Schema de Prisma (36 modelos desde MySQL)
-├── .env                               # Variables de entorno (DATABASE_URL)
+│   └── schema.prisma            # Schema de Prisma (36 modelos desde MySQL)
+├── .env                         # Variables de entorno (DATABASE_URL)
 └── README.md
 ```
+
+### Reglas de Organización
+
+1. **`app/` solo contiene rutas, layouts y API routes**
+   - Las páginas (`app/**/page.tsx`) solo importan y renderizan componentes de páginas desde `src/features/*/pages/`
+   - Los layouts (`app/layout.tsx`) son layouts de Next.js
+   - Los API routes (`app/api/**/route.ts`) son endpoints REST
+
+2. **Todo lo que sea UI reusable o lógica reusable va a `src/shared/`**
+   - Componentes genéricos → `src/shared/components/`
+   - Hooks genéricos → `src/shared/hooks/`
+   - Utilidades → `src/shared/utils/`
+   - Tipos compartidos → `src/shared/types/`
+
+3. **Todo lo específico de un dominio va por módulo en `src/features/<modulo>/`**
+   - Componentes específicos → `src/features/<modulo>/components/`
+   - Hooks específicos → `src/features/<modulo>/hooks/`
+   - API clients → `src/features/<modulo>/api/`
+   - Tipos específicos → `src/features/<modulo>/types/`
+   - Páginas (lógica encapsulada) → `src/features/<modulo>/pages/`
+
+4. **Todo lo transversal va a `src/shared/`**
+   - Componentes reutilizables entre módulos
+   - Utilidades compartidas
+   - Tipos comunes
+   - Configuraciones globales
 
 ---
 
@@ -435,8 +462,11 @@ records.api.ts.searchRecords()
 GET /api/records?project=...&zone=...&category=...&period=...&page=1&pageSize=5
   ↓ (consulta DB con paginación)
 Prisma.housing_universe.count({ where })
-Prisma.housing_universe.findMany({ skip, take })
-  ↓ (respuesta)
+Prisma.housing_universe.findMany({ skip, take, select: id, proyecto, categoria, zona, periodo })
+  ↓ (calcula total_unidades y unidades_disponibles dinámicamente)
+Para cada registro: Prisma.housing_units.count({ proyecto, periodo })
+Para cada registro: Prisma.housing_units.count({ proyecto, periodo, disponibilidad: "Disponible" })
+  ↓ (respuesta con campos calculados)
 records.api.ts → useRecordsSearch → page.tsx → [Módulo 2]
 ```
 
@@ -458,7 +488,8 @@ Cada resultado muestra:
   - Categoría
   - Zona (si existe)
   - Período
-  - Total Unidades (muestra 0 si es null)
+  - Total Unidades (calculado desde housing_units, muestra 0 si es null)
+  - Unidades Disponibles (calculado desde housing_units donde disponibilidad="Disponible", muestra 0 si es null)
     ↓
 Información de paginación:
   - "Mostrando X - Y de Z resultados"
@@ -472,7 +503,7 @@ Búsqueda automática con nueva página (mantiene filtros)
 
 **Componentes involucrados:**
 - `ResultsList` - Contenedor principal de resultados (área principal, parte inferior)
-- `ResultItem` - Item individual (muestra proyecto, categoría, zona, período, total unidades)
+- `ResultItem` - Item individual (muestra proyecto, categoría, zona, período, total unidades, unidades disponibles)
 - `Pagination` - Navegación de páginas (siempre presente si hay páginas)
 - `useRecordsSearch` - Hook con búsqueda automática y lógica de paginación
 
@@ -519,7 +550,7 @@ Muestra página de detalles con campos específicos:
 - Header sticky con botón "Volver", título y botón "Editar"
 - Footer sticky con botón "Guardar"
 - Organización lógica de campos en secciones (Grid 2 columnas desktop / 1 móvil)
-- Formateo de valores (fechas, números, enlaces) - funciones en `src/lib/utils/formatters.ts`
+- Formateo de valores (fechas, números, enlaces) - funciones en `src/shared/utils/formatters.ts`
 - Manejo de valores null/undefined (muestra 0 o N/A según corresponda)
 - Imagen del proyecto al final de la página (si `url_imagen` está disponible)
 - Navegación nativa de Next.js (mejor UX que modal)
@@ -540,7 +571,8 @@ ResultItem
 - Categoría
 - Zona (si existe)
 - Período
-- Total Unidades
+- Total Unidades (calculado desde housing_units)
+- Unidades Disponibles (calculado desde housing_units donde disponibilidad="Disponible")
 ```
 
 **Navegación de Páginas:**
@@ -591,7 +623,8 @@ RecordDetailsContent + Imagen
 - **Categoría**: Categoría del registro
 - **Zona**: Zona del registro (solo si existe)
 - **Período**: Período del registro
-- **Total Unidades**: Total de unidades (muestra 0 si es null o undefined)
+- **Total Unidades**: Total de unidades calculado dinámicamente desde `housing_units` basándose en `proyecto` y `periodo` (muestra 0 si es null o undefined)
+- **Unidades Disponibles**: Unidades disponibles calculadas dinámicamente desde `housing_units` donde `disponibilidad = "Disponible"` (muestra 0 si es null o undefined)
 - **Botón "Ver detalles"**: Navega a `/records/[id]` con información completa y modo de edición
 
 **La página `/records/[id]` muestra (solo campos necesarios):**
@@ -608,65 +641,63 @@ RecordDetailsContent + Imagen
 ## 🏗️ Arquitectura por Capas
 
 ### Capa de Presentación (UI)
-**Ubicación:** `app/(ui)/components/`
 
-Componentes presentacionales que solo reciben props y renderizan UI:
-
-**Módulo 0 - Autenticación:**
-- **`app/page.tsx`** - Página de login (raíz `/`)
+**Módulo de Autenticación (`src/features/auth/`):**
+- **`AuthPage`** - Página completa de autenticación (lógica encapsulada)
 - **`AuthIntro`** - Panel izquierdo informativo (solo lectura)
 - **`AuthCard`** - Contenedor del formulario de autenticación
 - **`AuthTabs`** - Tabs para alternar entre Login y Register
 - **`LoginForm`** - Formulario de inicio de sesión
 - **`RegisterForm`** - Formulario de registro con validación
+
+**Módulo de Proyectos (`src/features/projects/`):**
+- **`SearchProjectsPage`** - Página completa de búsqueda (lógica encapsulada)
+- **`ProjectDetailsPage`** - Página completa de detalles (lógica encapsulada)
+- **`ProjectAutocomplete`** - Input y dropdown con búsqueda en tiempo real
+- **`FiltersBar`** - Sidebar persistente con selectores de filtros (zona, categoría y período)
+- **`ResultsList`** - Contenedor principal de resultados con estados de carga/error
+- **`ResultItem`** - Item individual que muestra: proyecto, categoría, zona, período, total unidades, unidades disponibles
+
+**Componentes Compartidos (`src/shared/components/`):**
+- **`Pagination`** - Navegación entre páginas con información de resultados
+- **`ResultsPanel`** - Panel genérico de resultados (loading, error, empty, lista, paginación)
 - **`TextInput`** - Input de texto reutilizable con validación
 - **`PasswordInput`** - Input de contraseña con toggle mostrar/ocultar
 - **`PrimaryButton`** - Botón principal con estados de loading
-
-**Módulo 1 - Búsqueda y Filtros:**
-- **`app/search/page.tsx`** - Página principal de búsqueda (`/search`)
-- **`ProjectAutocomplete`** - Input y dropdown con búsqueda en tiempo real (área principal, arriba)
-- **`FiltersBar`** - Sidebar persistente con selectores de filtros (zona, categoría y período)
-
-**Módulo 2 - Visualización de Resultados:**
-- **`ResultsList`** - Contenedor principal de resultados con estados de carga/error (área principal, parte inferior)
-- **`ResultItem`** - Item individual que muestra: proyecto, categoría, zona, período, total unidades
-- **`Pagination`** - Navegación entre páginas con información de resultados (siempre presente si hay páginas)
-- **`app/records/[id]/page.tsx`** - Página de detalles del proyecto (ruta dinámica)
+- **`LoadingState`** - Estado de carga genérico
+- **`ErrorState`** - Estado de error genérico
+- **`EmptyState`** - Estado vacío genérico
 - **`RecordDetailsContent`** - Contenido de detalles organizados en secciones (reutilizable)
 
 ### Capa de Lógica (Hooks)
-**Ubicación:** `src/hooks/`
 
-Hooks personalizados que encapsulan lógica de negocio:
-
-**Módulo 0 - Autenticación:**
+**Módulo de Autenticación (`src/features/auth/hooks/`):**
 - **`useAuth`** - Manejo de login y register, redirección automática, estados de loading/error
 
-**Módulo 1 - Búsqueda y Filtros:**
+**Módulo de Proyectos (`src/features/projects/hooks/`):**
 - **`useProjectAutocomplete`** - Búsqueda con debounce (300ms), gestión de estado del autocomplete, eliminación de duplicados (máx 50 únicos)
 - **`useCatalogs`** - Carga automática de catálogos cuando cambia el proyecto (zonas, categorías y períodos en paralelo)
 - **`useRecordsSearch`** - Búsqueda paginada automática (5 por página), se ejecuta automáticamente cuando cambian proyecto o filtros (zona, categoría, período), gestión de página y resultados
+- **`useRecordDetails`** - Cache de detalles (useRef con Map), carga de datos desde API
+- **`useUpdateRecord`** - Actualización de registro con manejo de estados
 
-**Módulo 2 - Visualización de Resultados:**
-- **`useRecordsSearch`** - Gestión de resultados, búsqueda automática al cambiar página, estados de carga/error
-- **`useRecordDetails`** - Cache de detalles (useRef con Map), carga de datos desde API, sin modal (rediseñado para página dedicada)
+**Hooks Compartidos (`src/shared/hooks/`):**
+- (Preparado para hooks genéricos reutilizables)
 
 ### Capa de Servicios (API Functions)
-**Ubicación:** `src/lib/api/`
 
-Funciones que abstraen las llamadas a la API:
-
+**Módulo de Proyectos (`src/features/projects/api/`):**
 - **`projects.api.ts`** - `searchProjects(query: string)` - Búsqueda por prefijo
 - **`catalogs.api.ts`** - `getZones(project: string)`, `getCategories(project: string)`, `getPeriods(project: string)` - Catálogos dinámicos
-- **`records.api.ts`** - `searchRecords(params)`, `getRecordDetails(id: number)` - Registros y detalles (soporta filtros: zone, category, period)
+- **`records.api.ts`** - `searchRecords(params)`, `getRecordDetails(id: number)`, `updateRecordDetails(id, data)` - Registros y detalles (soporta filtros: zone, category, period)
 
 ### Capa de Utilidades
-**Ubicación:** `src/lib/utils/`
 
-Funciones helper reutilizables:
-
+**Utilidades Compartidas (`src/shared/utils/`):**
 - **`formatters.ts`** - `formatValue(value)`, `formatDate(dateString)` - Formateo de valores y fechas para visualización consistente
+
+**Bibliotecas Compartidas (`src/shared/lib/`):**
+- **`prisma.ts`** - PrismaClient singleton (previene múltiples instancias en desarrollo)
 
 ### Capa de Backend (API Routes)
 **Ubicación:** `app/api/`
@@ -677,23 +708,30 @@ Endpoints REST que procesan requests y consultan la base de datos:
 - **`/api/zones`** - Catálogo de zonas únicas por proyecto (ordenadas A-Z)
 - **`/api/categories`** - Catálogo de categorías únicas por proyecto (ordenadas A-Z)
 - **`/api/periods`** - Catálogo de períodos únicos por proyecto (ordenados A-Z)
-- **`/api/records`** - Resultados filtrados y paginados (5 por página, campos: id, proyecto, categoria, zona, periodo, total_unidades, filtros: zone, category, period)
+- **`/api/records`** - Resultados filtrados y paginados (5 por página, campos: id, proyecto, categoria, zona, periodo, total_unidades, unidades_disponibles. Calcula dinámicamente total_unidades y unidades_disponibles desde housing_units basándose en proyecto y periodo. Filtros: zone, category, period)
+  - **Cálculo dinámico**: Para cada registro de `housing_universe`, el endpoint ejecuta dos consultas en paralelo a `housing_units`:
+    - `total_unidades`: Cuenta todas las unidades donde `proyecto` y `periodo` coinciden
+    - `unidades_disponibles`: Cuenta las unidades donde `proyecto`, `periodo` y `disponibilidad = "Disponible"` coinciden
+    - Ambos valores se calculan usando `Promise.all` para optimizar el rendimiento
+    - Si el conteo es 0 o null, se devuelve 0 en lugar de null
 - **`/api/records/[id]`** - Detalles específicos de un registro (solo campos necesarios: proyecto, fase, torre, periodo, categoria, pais, departamento, municipio, zona, desarrollador, estado, fecha_inicio, fecha_entrega, total_unidades, unidades_disponibles, tipo_de_seguridad, precio_promedio, cuota_promedio, ingresos_promedio, cantidad_accesos, url_imagen)
 
 ### Capa de Datos
-**Ubicación:** `prisma/`, `src/lib/prisma.ts`
+**Ubicación:** `prisma/`, `src/shared/lib/prisma.ts`
 
 - **`schema.prisma`** - Definición de modelos (36 modelos importados desde MySQL)
 - **`prisma.ts`** - Singleton de PrismaClient (previene múltiples instancias en desarrollo)
 - **`generated/prisma/`** - Cliente generado por Prisma
 
 ### Capa de Tipos
-**Ubicación:** `src/types/`
 
+**Tipos de Dominio (`src/features/projects/types/`):**
 - **`domain.ts`** - Tipos del dominio de negocio:
-  - `Project` - { id, proyecto, categoria, zona, periodo, total_unidades }
+  - `Project` - { id, proyecto, categoria, zona, periodo, total_unidades, unidades_disponibles }
   - `SelectedProject` - { proyecto, categoria, zona }
   - `RecordDetails` - Campos específicos de la página de detalles (proyecto, fase, torre, periodo, categoria, pais, departamento, municipio, zona, desarrollador, estado, fecha_inicio, fecha_entrega, total_unidades, unidades_disponibles, tipo_de_seguridad, precio_promedio, cuota_promedio, ingresos_promedio, cantidad_accesos, url_imagen, latitud, longitud)
+
+**Tipos Compartidos (`src/shared/types/`):**
 - **`api.ts`** - Tipos de respuestas de la API:
   - `ProjectsResponse`, `ZonesResponse`, `CategoriesResponse`, `PeriodsResponse`
   - `RecordsResponse`, `DetailsResponse`
@@ -740,14 +778,16 @@ Prisma.housing_universe.findMany({ distinct })
 useCatalogs → page.tsx → FiltersBar
 ```
 
-### Flujo de Detalles del Modal (Módulo 2)
+### Flujo de Detalles de la Página (Módulo 2)
 
 ```
 ResultItem (click en "Ver detalles")
-  ↓ (callback)
-page.tsx (onOpenDetails)
+  ↓ (Link component)
+Navegación a /records/[id]
+  ↓ (página carga)
+app/records/[id]/page.tsx
   ↓ (usa hook)
-useRecordDetails.openDetails(id)
+useRecordDetails.loadDetails(id)
   ↓ (verifica cache)
 detailsCache.has(id) ?
   → Sí: usa datos del cache
@@ -758,8 +798,8 @@ detailsCache.has(id) ?
         Prisma.housing_universe.findUnique({ where: { id } })
         ↓ (guarda en cache)
         detailsCache.set(id, data)
-  ↓ (muestra modal)
-DetailsModal
+  ↓ (renderiza página)
+ProjectDetailsPage → RecordDetailsContent
 ```
 
 ---
@@ -860,7 +900,8 @@ DetailsModal
         ┌───────────────────────────────────┐
         │   ResultItem                      │
         │   (proyecto, categoría, zona,     │
-        │    período, total unidades)       │
+        │    período, total unidades,       │
+        │    unidades disponibles)          │
         └───────────────────────────────────┘
                             │
                             ▼
@@ -889,8 +930,9 @@ DetailsModal
                             │
                             ▼
         ┌───────────────────────────────────┐
-        │   DetailsModal                    │
-        │   (Muestra todos los campos)      │
+        │   ProjectDetailsPage              │
+        │   (Página dedicada con todos los   │
+        │    campos y modo edición)         │
         └───────────────────────────────────┘
 ```
 
@@ -948,17 +990,18 @@ DetailsModal
 - **Categoría**: Categoría del registro
 - **Zona**: Zona del registro (solo si existe)
 - **Período**: Período del registro
-- **Total Unidades**: Total de unidades (muestra 0 si es null o undefined)
-- **Botón "Ver detalles"**: Abre modal con información completa
+- **Total Unidades**: Total de unidades calculado dinámicamente desde `housing_units` basándose en `proyecto` y `periodo` (muestra 0 si es null o undefined)
+- **Unidades Disponibles**: Unidades disponibles calculadas dinámicamente desde `housing_units` donde `disponibilidad = "Disponible"` (muestra 0 si es null o undefined)
+- **Botón "Ver detalles"**: Navega a `/records/[id]` con información completa y modo de edición
 
-**El `DetailsModal` muestra (solo campos necesarios):**
+**La página `/records/[id]` muestra (solo campos necesarios):**
 
 - **Información Básica**: Proyecto, Fase, Torre, Período, Categoría, Estado
-- **Ubicación**: País, Departamento, Municipio, Zona
+- **Ubicación**: País, Departamento, Municipio, Zona, Latitud, Longitud
 - **Desarrollador**: Nombre del desarrollador
 - **Fechas**: Fecha Inicio, Fecha Entrega (formateadas)
-- **Unidades**: Total Unidades (muestra 0 si es null), Unidades Disponibles (muestra 0 si es null)
-- **Precios**: Precio Promedio, Cuota Promedio, Ingresos Promedio
+- **Unidades**: Total Unidades (solo lectura, muestra 0 si es null), Unidades Disponibles (editable, muestra 0 si es null)
+- **Precios**: Precio Promedio, Cuota Promedio, Ingresos Promedio (editables)
 - **Información Adicional**: Tipo de Seguridad, Cantidad Accesos, URL Imagen (link clickeable)
 
 ---
@@ -991,4 +1034,13 @@ DetailsModal
 
 ---
 
-**Última actualización:** Diciembre 2024
+---
+
+## 📚 Documentación Adicional
+
+- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Documentación detallada de la arquitectura feature-based
+- **[API.md](./API.md)** - Documentación completa de los endpoints de la API
+
+---
+
+**Última actualización:** Enero 2026

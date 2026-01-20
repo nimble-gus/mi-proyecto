@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Project } from "@/src/types/domain";
+import { Project } from "../types/domain";
 
 interface ResultItemProps {
   project: Project;

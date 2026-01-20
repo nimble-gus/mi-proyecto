@@ -35,6 +35,7 @@ yarn-error.log*
 API.md
 frontend.md
 README.md
+architecture.md
 # vercel
 .vercel
 

@@ -1,7 +1,7 @@
 "use client";
 
-import { RecordDetails } from "@/src/types/domain";
-import { formatValue, formatDate } from "@/src/lib/utils/formatters";
+import { RecordDetails } from "@/src/features/projects/types/domain";
+import { formatValue, formatDate } from "@/src/shared/utils/formatters";
 
 interface RecordDetailsContentProps {
   details: RecordDetails | null;
