@@ -128,7 +128,7 @@ export function ProjectDetailsPage({ id }: ProjectDetailsPageProps) {
   }, [updateSuccess, id, loadDetails, resetState, originalData, editedData]);
 
   const handleGoBack = () => {
-    router.back();
+    router.push("/search");
   };
 
   const handleEdit = () => {
@@ -160,7 +160,9 @@ export function ProjectDetailsPage({ id }: ProjectDetailsPageProps) {
       if (editedData.precio_promedio !== undefined) updateData.precio_promedio = editedData.precio_promedio === "" ? null : editedData.precio_promedio;
       if (editedData.cuota_promedio !== undefined) updateData.cuota_promedio = editedData.cuota_promedio === "" ? null : editedData.cuota_promedio;
       if (editedData.ingresos_promedio !== undefined) updateData.ingresos_promedio = editedData.ingresos_promedio === "" ? null : editedData.ingresos_promedio;
-      if (editedData.unidades_disponibles !== undefined) updateData.unidades_disponibles = editedData.unidades_disponibles === "" || editedData.unidades_disponibles === null ? null : editedData.unidades_disponibles;
+      if (editedData.unidades_disponibles !== undefined) {
+        updateData.unidades_disponibles = editedData.unidades_disponibles;
+      }
 
       // Llamar a updateRecord - el useEffect manejará el éxito y establecerá savedChanges
       await updateRecord(recordId, updateData);
@@ -202,23 +204,37 @@ export function ProjectDetailsPage({ id }: ProjectDetailsPageProps) {
           <h1 className="flex-1 text-2xl font-semibold bg-gradient-to-r from-[#1F3A5F] to-[#4DA3FF] bg-clip-text text-transparent lg:text-3xl">
             Detalles del Proyecto
           </h1>
-          {!isEditing ? (
-            <button
-              type="button"
-              onClick={handleEdit}
-              className="-ml-2 rounded-lg border-2 border-[#4DA3FF] bg-gradient-to-r from-[#4DA3FF] to-[#1F3A5F] px-16 py-2 text-sm font-semibold text-white shadow-lg transition-all hover:from-[#1F3A5F] hover:to-[#4DA3FF] hover:shadow-xl hover:scale-105"
-            >
-              Editar
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={handleCancel}
-              className="-ml-2 rounded-lg border-2 border-[#EF4444] bg-[#EF4444]/10 px-8 py-2 text-sm font-semibold text-[#EF4444] transition-all hover:bg-[#EF4444] hover:text-white hover:shadow-md"
-            >
-              Cancelar
-            </button>
-          )}
+          <div className="flex items-center gap-3">
+            {!isEditing && (
+              <button
+                type="button"
+                onClick={() => router.push(`/records/${id}/units`)}
+                className="rounded-lg border-2 border-[#10B981] bg-gradient-to-r from-[#10B981] to-[#059669] px-6 py-2 text-sm font-semibold text-white shadow-lg transition-all hover:from-[#059669] hover:to-[#10B981] hover:shadow-xl hover:scale-105 flex items-center gap-2"
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+                Ver Unidades
+              </button>
+            )}
+            {!isEditing ? (
+              <button
+                type="button"
+                onClick={handleEdit}
+                className="rounded-lg border-2 border-[#4DA3FF] bg-gradient-to-r from-[#4DA3FF] to-[#1F3A5F] px-8 py-2 text-sm font-semibold text-white shadow-lg transition-all hover:from-[#1F3A5F] hover:to-[#4DA3FF] hover:shadow-xl hover:scale-105"
+              >
+                Editar
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="rounded-lg border-2 border-[#EF4444] bg-[#EF4444]/10 px-8 py-2 text-sm font-semibold text-[#EF4444] transition-all hover:bg-[#EF4444] hover:text-white hover:shadow-md"
+              >
+                Cancelar
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Mensajes de error */}

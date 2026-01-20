@@ -39,10 +39,16 @@ mi-proyecto/
 │   │   │   └── route.ts         # GET /api/categories - Catálogo categorías
 │   │   ├── periods/
 │   │   │   └── route.ts         # GET /api/periods - Catálogo de períodos
-│   │   └── records/
-│   │       ├── route.ts         # GET /api/records - Resultados paginados (calcula total_unidades y unidades_disponibles)
-│   │       └── [id]/
-│   │           └── route.ts     # GET/PUT /api/records/[id] - Detalles y actualización
+│   │   ├── records/
+│   │   │   ├── route.ts         # GET /api/records - Resultados paginados (calcula total_unidades y unidades_disponibles)
+│   │   │   └── [id]/
+│   │   │       └── route.ts     # GET/PUT /api/records/[id] - Detalles y actualización
+│   │   └── units/
+│   │       ├── catalogs/
+│   │       │   └── route.ts     # GET /api/units/catalogs - Catálogos dinámicos (uso, disponibilidad, dormitorios)
+│   │       ├── route.ts         # GET /api/units - Búsqueda paginada con filtros
+│   │       └── [unitId]/
+│   │           └── route.ts     # GET/PATCH /api/units/[unitId] - Detalles y actualización de unidad
 │   ├── layout.tsx              # Layout raíz con tipografía Inter
 │   └── globals.css             # Estilos globales y paleta de colores
 │
@@ -54,11 +60,12 @@ mi-proyecto/
 │   │   │   ├── api/             # projects.api.ts, catalogs.api.ts, records.api.ts
 │   │   │   ├── types/           # domain.ts (Project, SelectedProject, RecordDetails)
 │   │   │   └── pages/           # SearchProjectsPage, ProjectDetailsPage
-│   │   ├── units/               # Módulo de Unidades (preparado, vacío)
-│   │   │   ├── components/
-│   │   │   ├── hooks/
-│   │   │   ├── api/
-│   │   │   └── types/
+│   │   ├── units/               # Módulo de Unidades
+│   │   │   ├── components/      # UnitsFiltersBar, UnitItem, UnitsList
+│   │   │   ├── hooks/           # useUnitsCatalogs, useUnitsSearch, useUnitDetails, useUpdateUnit, useRecordIdFromUnit
+│   │   │   ├── api/             # units.api.ts
+│   │   │   ├── types/           # domain.ts (Unit, UnitDetails, UnitsCatalogs)
+│   │   │   └── pages/           # UnitsSearchPage, UnitDetailsPage
 │   │   └── auth/                 # Módulo de Autenticación
 │   │       ├── components/      # AuthCard, AuthIntro, AuthTabs, LoginForm, RegisterForm
 │   │       ├── hooks/           # useAuth
@@ -635,6 +642,7 @@ RecordDetailsContent + Imagen
 - **Unidades**: Total Unidades (solo lectura), Unidades Disponibles (editable)
 - **Precios**: Precio Promedio, Cuota Promedio, Ingresos Promedio (editables)
 - **Información Adicional**: Tipo de Seguridad, Cantidad Accesos, URL Imagen (link clickeable)
+- **Botón "Ver Unidades"**: Navega a `/records/[id]/units` para ver el listado de unidades del proyecto
 
 ---
 
@@ -657,6 +665,13 @@ RecordDetailsContent + Imagen
 - **`FiltersBar`** - Sidebar persistente con selectores de filtros (zona, categoría y período)
 - **`ResultsList`** - Contenedor principal de resultados con estados de carga/error
 - **`ResultItem`** - Item individual que muestra: proyecto, categoría, zona, período, total unidades, unidades disponibles
+
+**Módulo de Unidades (`src/features/units/`):**
+- **`UnitsSearchPage`** - Página completa de búsqueda de unidades (lógica encapsulada, diseño dashboard)
+- **`UnitDetailsPage`** - Página completa de detalles de unidad (lógica encapsulada, modo edición)
+- **`UnitsFiltersBar`** - Sidebar persistente con selectores de filtros (uso, disponibilidad, dormitorios)
+- **`UnitsList`** - Contenedor principal de resultados con estados de carga/error
+- **`UnitItem`** - Item individual que muestra: nombre de unidad, uso, disponibilidad, dormitorios
 
 **Componentes Compartidos (`src/shared/components/`):**
 - **`Pagination`** - Navegación entre páginas con información de resultados
@@ -681,6 +696,13 @@ RecordDetailsContent + Imagen
 - **`useRecordDetails`** - Cache de detalles (useRef con Map), carga de datos desde API
 - **`useUpdateRecord`** - Actualización de registro con manejo de estados
 
+**Módulo de Unidades (`src/features/units/hooks/`):**
+- **`useUnitsCatalogs`** - Carga automática de catálogos cuando cambia el proyecto (uso, disponibilidad, dormitorios)
+- **`useUnitsSearch`** - Búsqueda paginada automática (5 por página), se ejecuta automáticamente cuando cambian filtros (uso, disponibilidad, dormitorios), gestión de página y resultados
+- **`useUnitDetails`** - Cache de detalles (useRef con Map), carga de datos desde API
+- **`useUpdateUnit`** - Actualización de unidad con manejo de estados
+- **`useRecordIdFromUnit`** - Obtener recordId desde proyecto y período para navegación
+
 **Hooks Compartidos (`src/shared/hooks/`):**
 - (Preparado para hooks genéricos reutilizables)
 
@@ -690,6 +712,9 @@ RecordDetailsContent + Imagen
 - **`projects.api.ts`** - `searchProjects(query: string)` - Búsqueda por prefijo
 - **`catalogs.api.ts`** - `getZones(project: string)`, `getCategories(project: string)`, `getPeriods(project: string)` - Catálogos dinámicos
 - **`records.api.ts`** - `searchRecords(params)`, `getRecordDetails(id: number)`, `updateRecordDetails(id, data)` - Registros y detalles (soporta filtros: zone, category, period)
+
+**Módulo de Unidades (`src/features/units/api/`):**
+- **`units.api.ts`** - `getUnitsCatalogs(params)`, `searchUnits(params)`, `getUnitDetails(unitId: number)`, `updateUnitDetails(unitId, data)` - Catálogos, búsqueda, detalles y actualización de unidades
 
 ### Capa de Utilidades
 
@@ -715,6 +740,9 @@ Endpoints REST que procesan requests y consultan la base de datos:
     - Ambos valores se calculan usando `Promise.all` para optimizar el rendimiento
     - Si el conteo es 0 o null, se devuelve 0 en lugar de null
 - **`/api/records/[id]`** - Detalles específicos de un registro (solo campos necesarios: proyecto, fase, torre, periodo, categoria, pais, departamento, municipio, zona, desarrollador, estado, fecha_inicio, fecha_entrega, total_unidades, unidades_disponibles, tipo_de_seguridad, precio_promedio, cuota_promedio, ingresos_promedio, cantidad_accesos, url_imagen)
+- **`/api/units/catalogs`** - Catálogos dinámicos de unidades (uso, disponibilidad, dormitorios) filtrados por recordId y período
+- **`/api/units`** - Búsqueda paginada de unidades con filtros (recordId, period, use, availability, bedrooms, page, pageSize, sort)
+- **`/api/units/[unitId]`** - Detalles de una unidad específica (GET) y actualización de campos editables (PATCH)
 
 ### Capa de Datos
 **Ubicación:** `prisma/`, `src/shared/lib/prisma.ts`
@@ -730,6 +758,12 @@ Endpoints REST que procesan requests y consultan la base de datos:
   - `Project` - { id, proyecto, categoria, zona, periodo, total_unidades, unidades_disponibles }
   - `SelectedProject` - { proyecto, categoria, zona }
   - `RecordDetails` - Campos específicos de la página de detalles (proyecto, fase, torre, periodo, categoria, pais, departamento, municipio, zona, desarrollador, estado, fecha_inicio, fecha_entrega, total_unidades, unidades_disponibles, tipo_de_seguridad, precio_promedio, cuota_promedio, ingresos_promedio, cantidad_accesos, url_imagen, latitud, longitud)
+
+**Tipos de Dominio (`src/features/units/types/`):**
+- **`domain.ts`** - Tipos del dominio de unidades:
+  - `Unit` - { id, num_unidad, modelo, torre_fase, unidad, uso, disponibilidad, cant_dormitorios, precio_total_usd, precio_total_qtz, tama_o_unidad }
+  - `UnitDetails` - Campos específicos de la página de detalles (proyecto, unidad, periodo, modelo, torre_fase, tamaños, dormitorios, sanitarios, parqueo, precios, disponibilidad, categoría, hora_recoleccion, cuota, absorcion_unitaria)
+  - `UnitsCatalogs` - { uses, availabilities, bedrooms }
 
 **Tipos Compartidos (`src/shared/types/`):**
 - **`api.ts`** - Tipos de respuestas de la API:
@@ -1031,8 +1065,225 @@ ProjectDetailsPage → RecordDetailsContent
 2. Usuario selecciona proyecto → Filtros habilitados + Búsqueda automática
 3. Usuario cambia filtros → Búsqueda automática (página 1)
 4. Usuario navega páginas → Búsqueda automática (mismo filtro, nueva página)
+5. Usuario ve detalles del proyecto → Botón "Ver Unidades" disponible
+6. Usuario accede a unidades → Búsqueda automática de unidades con filtros (uso, disponibilidad, dormitorios)
+7. Usuario ve detalle de unidad → Botón "Volver" regresa a lista de unidades
 
 ---
+
+---
+
+## 📦 Módulo 3: Gestión de Unidades
+
+Este módulo extiende la funcionalidad del sistema permitiendo la gestión y consulta de las unidades asociadas a un proyecto específico. A partir del detalle de un proyecto, el usuario puede acceder a una vista dedicada de unidades donde se presenta un listado paginado y filtrable basado en criterios como uso, disponibilidad y número de dormitorios.
+
+### 3.1. Acceso a Unidades desde Proyecto
+
+```
+Usuario en Detalles del Proyecto (/records/[id])
+    ↓
+Click en botón "Ver Unidades"
+    ↓
+Navegación a /records/[id]/units
+    ↓
+Carga automática del contexto del proyecto (nombre y período)
+    ↓
+Carga automática de catálogos (uso, disponibilidad, dormitorios)
+    ↓
+Búsqueda automática de unidades (sin filtros inicialmente)
+```
+
+**Componentes involucrados:**
+- `app/records/[id]/units/page.tsx` - Página de búsqueda de unidades
+- `UnitsSearchPage` - Página completa con diseño dashboard (lógica encapsulada)
+- `UnitsFiltersBar` - Sidebar de filtros (uso, disponibilidad, dormitorios)
+- `UnitsList` - Lista de resultados con estados
+- `UnitItem` - Item individual de unidad
+
+**Características:**
+- Diseño dashboard consistente con búsqueda de proyectos
+- Sidebar persistente con filtros (sticky en desktop)
+- Búsqueda automática al cambiar filtros (resetea página a 1)
+- Paginación (5 unidades por página, máximo 50)
+- Catálogos dinámicos según proyecto y período
+- Contexto del proyecto visible en header (nombre y período)
+
+### 3.2. Filtros de Unidades
+
+```
+Proyecto cargado
+    ↓
+GET /api/units/catalogs?recordId=...&period=...
+    ↓
+Catálogos cargados:
+  - uses: valores únicos de uso
+  - availabilities: valores únicos de disponibilidad
+  - bedrooms: valores únicos de número de dormitorios
+    ↓
+Usuario selecciona filtros (opcional)
+    ↓
+Búsqueda automática con filtros aplicados
+```
+
+**Filtros disponibles:**
+- **Uso**: Select con valores únicos del proyecto
+- **Disponibilidad**: Select con valores únicos del proyecto
+- **Número de Dormitorios**: Select numérico con valores únicos del proyecto
+
+**Acciones:**
+- Botón "Limpiar filtros" (visible cuando hay filtros activos)
+- Botón "Agregar unidad" (deshabilitado, solo UI por ahora)
+
+### 3.3. Búsqueda y Visualización de Unidades
+
+```
+Filtros aplicados (o sin filtros)
+    ↓
+GET /api/units?recordId=...&period=...&use=...&availability=...&bedrooms=...&page=1&pageSize=5
+    ↓
+Muestra 5 unidades por página
+    ↓
+Cada unidad muestra:
+  - Nombre de la unidad (título)
+  - Uso
+  - Disponibilidad (con colores: verde si "Disponible", rojo si no)
+  - Número de dormitorios
+  - Botón "Ver detalles"
+    ↓
+Usuario navega entre páginas
+    ↓
+Búsqueda automática con nueva página (mantiene filtros)
+```
+
+**Componentes involucrados:**
+- `UnitsList` - Contenedor principal de resultados
+- `UnitItem` - Item individual con información básica
+- `Pagination` - Navegación de páginas (reutilizado)
+- `useUnitsSearch` - Hook con búsqueda automática y lógica de paginación
+
+**Características:**
+- 5 unidades por página (configurable, máx 50)
+- Estados de UI: cargando, error, sin resultados, con resultados
+- Paginación siempre visible si hay múltiples páginas
+- Navegación automática: búsqueda al cambiar página
+- Contador de resultados: "X unidades encontradas"
+
+### 3.4. Detalle de Unidad
+
+```
+Usuario hace click en "Ver detalles" en un UnitItem
+    ↓
+Navegación a /units/[unitId]
+    ↓
+Verifica cache (Map<id, details>)
+    ↓
+Si no está en cache:
+  GET /api/units/[unitId]
+    ↓
+Guarda en cache
+    ↓
+Muestra página de detalles con campos específicos:
+  - Información Básica (proyecto, unidad, período, modelo, torre_fase, uso, disponibilidad, categoría, hora_recoleccion)
+  - Características y Tamaños (dormitorios, sanitarios, tamaños)
+  - Parqueo (parqueo, tipo_parqueo, cantidad, parqueo_motos, tamaño_parqueo)
+  - Precios (precios totales, precios sin IVA, precio_mantenimiento_total, cuota, absorcion_unitaria)
+```
+
+**Componentes involucrados:**
+- `app/units/[unitId]/page.tsx` - Página de detalles de unidad
+- `UnitDetailsPage` - Página completa de detalles (lógica encapsulada)
+- `useUnitDetails` - Hook con cache y carga de detalles
+- `useUpdateUnit` - Hook para actualización de unidad
+
+**Características:**
+- Cache de detalles para evitar peticiones redundantes
+- Página dedicada responsive con layout completo
+- Header sticky con botón "Volver" (regresa a lista de unidades), título y botón "Editar"
+- Footer sticky con botón "Guardar" (en modo edición)
+- Organización lógica de campos en secciones (Grid 2 columnas desktop / 1 móvil)
+- Modo edición con campos editables
+- Navegación inteligente: "Volver" regresa a `/records/[recordId]/units`
+
+### 3.5. Flujo de Datos del Módulo 3
+
+**Carga de Catálogos:**
+```
+UnitsSearchPage (recordId disponible)
+  ↓ (usa hook)
+useUnitsCatalogs
+  ↓ (llama API)
+units.api.ts.getUnitsCatalogs()
+  ↓ (fetch)
+GET /api/units/catalogs?recordId=...&period=...
+  ↓ (consulta DB)
+Prisma.housing_units.findMany({ where: { cod_proyecto, periodo } })
+  ↓ (extrae valores únicos)
+uses, availabilities, bedrooms
+  ↓ (respuesta)
+useUnitsCatalogs → UnitsSearchPage → UnitsFiltersBar
+```
+
+**Búsqueda de Unidades:**
+```
+UnitsSearchPage (filtros o sin filtros)
+  ↓ (trigger automático)
+useUnitsSearch.useEffect()
+  ↓ (detecta cambios)
+useUnitsSearch.performSearch()
+  ↓ (llama API)
+units.api.ts.searchUnits()
+  ↓ (fetch)
+GET /api/units?recordId=...&period=...&use=...&availability=...&bedrooms=...&page=1&pageSize=5
+  ↓ (consulta DB con paginación)
+Prisma.housing_units.count({ where })
+Prisma.housing_units.findMany({ skip, take, select: campos necesarios })
+  ↓ (respuesta)
+units.api.ts → useUnitsSearch → UnitsSearchPage → UnitsList → UnitItem
+```
+
+**Detalles de Unidad:**
+```
+UnitItem (click en "Ver detalles")
+  ↓ (Link component)
+Navegación a /units/[unitId]
+  ↓ (página carga)
+app/units/[unitId]/page.tsx
+  ↓ (usa hook)
+useUnitDetails.loadDetails(unitId)
+  ↓ (verifica cache)
+detailsCache.has(unitId) ?
+  → Sí: usa datos del cache
+  → No: units.api.ts.getUnitDetails(unitId)
+        ↓ (fetch)
+        GET /api/units/[unitId]
+        ↓ (consulta DB con select específico)
+        Prisma.housing_units.findUnique({ 
+          where: { id },
+          select: { proyecto, unidad, periodo, ... }
+        })
+        ↓ (guarda en cache)
+        detailsCache.set(unitId, data)
+  ↓ (renderiza página)
+UnitDetailsPage
+```
+
+**Actualización de Unidad:**
+```
+UnitDetailsPage (modo edición)
+  ↓ (usuario edita campos)
+handleFieldChange()
+  ↓ (usuario guarda)
+useUpdateUnit.updateUnit()
+  ↓ (llama API)
+units.api.ts.updateUnitDetails()
+  ↓ (fetch PATCH)
+PATCH /api/units/[unitId]
+  ↓ (valida whitelist de campos editables)
+  ↓ (ejecuta update)
+Prisma.housing_units.update({ where: { id }, data: updateData })
+  ↓ (respuesta)
+units.api.ts → useUpdateUnit → UnitDetailsPage (recarga detalles)
+```
 
 ---
 
