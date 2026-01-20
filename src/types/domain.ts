@@ -7,6 +7,7 @@ export interface Project {
   zona: string | null;
   periodo: string;
   total_unidades: number | null;
+  unidades_disponibles: number | null;
 }
 
 export interface SelectedProject {

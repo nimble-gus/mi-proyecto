@@ -20,9 +20,9 @@ La interfaz está organizada en un diseño de **2 columnas**: un **panel lateral
 ```
 mi-proyecto/
 ├── app/
-│   ├── page.tsx                        # Página de Login (raíz /)
+│   ├── page.tsx                        # Router inteligente (raíz /) - verifica autenticación y redirige
 │   ├── login/
-│   │   ├── page.tsx                    # Componente de login (redirigido desde /)
+│   │   ├── page.tsx                    # Página de Login (/login) - formulario completo de autenticación
 │   │   └── components/
 │   │       ├── AuthIntro.tsx           # Panel izquierdo informativo
 │   │       ├── AuthCard.tsx            # Contenedor del formulario
@@ -40,11 +40,11 @@ mi-proyecto/
 │   │       ├── FiltersBar.tsx          # Filtros de zona, categoría y período
 │   │       ├── ResultsList.tsx         # Lista de resultados paginados
 │   │       ├── ResultItem.tsx          # Item individual (proyecto, categoría, zona, período)
-│   │       ├── RecordDetailsContent.tsx # Contenido de detalles reutilizable
+│   │       ├── RecordDetailsContent.tsx # Contenido de detalles y edición reutilizable
 │   │       └── Pagination.tsx          # Componente de paginación (5 por página)
 │   ├── records/
 │   │   └── [id]/
-│   │       └── page.tsx                # Página de detalles del proyecto (/records/[id])
+│   │       └── page.tsx                # Página de detalles y edición del proyecto (/records/[id])
 │   ├── api/
 │   │   ├── projects/
 │   │   │   └── route.ts                # GET /api/projects - Búsqueda por prefijo
@@ -57,7 +57,7 @@ mi-proyecto/
 │   │   └── records/
 │   │       ├── route.ts                # GET /api/records - Resultados paginados
 │   │       └── [id]/
-│   │           └── route.ts            # GET /api/records/[id] - Detalles completos
+│   │           └── route.ts            # GET/PUT /api/records/[id] - Detalles y actualización de campos editables
 │   ├── layout.tsx                      # Layout raíz con tipografía Inter
 │   └── globals.css                     # Estilos globales y paleta de colores
 ├── src/
@@ -65,14 +65,15 @@ mi-proyecto/
 │   │   ├── useAuth.ts                  # Hook: autenticación (login/register)
 │   │   ├── useProjectAutocomplete.ts   # Hook: autocomplete + debounce (300ms)
 │   │   ├── useCatalogs.ts              # Hook: carga automática de catálogos
-│   │   ├── useRecordsSearch.ts        # Hook: búsqueda paginada (5 por página)
-│   │   └── useRecordDetails.ts        # Hook: detalles + cache
+│   │   ├── useRecordsSearch.ts         # Hook: búsqueda paginada (5 por página)
+│   │   ├── useRecordDetails.ts         # Hook: detalles + cache en memoria
+│   │   └── useUpdateRecord.ts          # Hook: actualización de registro (PUT /api/records/[id])
 │   ├── lib/
 │   │   ├── prisma.ts                  # PrismaClient singleton
 │   │   ├── api/
 │   │   │   ├── projects.api.ts         # API: searchProjects(query)
 │   │   │   ├── catalogs.api.ts        # API: getZones, getCategories, getPeriods
-│   │   │   └── records.api.ts         # API: searchRecords, getRecordDetails
+│   │   │   └── records.api.ts         # API: searchRecords, getRecordDetails, updateRecordDetails
 │   │   └── utils/
 │   │       └── formatters.ts           # Funciones: formatValue, formatDate
 │   └── types/
@@ -92,26 +93,76 @@ mi-proyecto/
 
 ### Paleta de Colores
 
-- **Primary**: Azul petróleo (#1F3A5F) - Botones principales, acciones destacadas
-- **Secondary**: Azul claro (#4DA3FF) - Links, hover states, focus rings
+**Colores Principales:**
+- **Primary**: Azul petróleo (#1F3A5F) - Botones principales, títulos, acciones destacadas
+- **Secondary**: Azul claro (#4DA3FF) - Links, hover states, focus rings, acentos interactivos
 - **Surface**: Blanco (#FFFFFF) - Fondos principales
 - **Muted**: Gris claro (#F3F4F6) - Fondos de sidebar, estados disabled, hover suave
 - **Text**: Gris oscuro (#111827) - Texto principal
+- **Text Muted**: Gris medio (#6B7280) - Texto secundario
 - **Border**: Gris suave (#E5E7EB) - Bordes y separadores
-- **Success/Error**: Verde/Rojo sobrios para mensajes
+
+**Colores Adicionales:**
+- **Success**: Verde (#10B981) - Estados positivos, unidades disponibles, badges informativos
+- **Error**: Rojo (#EF4444) - Mensajes de error, validaciones
+- **Accent**: Naranja (#F59E0B) - Acentos secundarios, períodos, elementos destacados
+
+**Gradientes Utilizados:**
+- `from-[#4DA3FF] to-[#1F3A5F]` - Botones principales, badges, tabs activos
+- `from-[#4DA3FF] via-[#1F3A5F] to-[#4DA3FF]` - Botones con efecto hover animado
+- Fondos sutiles: `from-white to-[#F3F4F6]/30` - Cards y contenedores
 
 ### Tipografía
 
 - **Primaria**: Inter (Google Fonts)
-- **Títulos**: Semibold
-- **Body**: Regular
-- **Labels**: Medium (para filtros e inputs)
+- **Títulos**: Semibold (600)
+- **Subtítulos**: Medium (500)
+- **Body**: Regular (400)
+- **Labels**: Semibold/Medium (para filtros, inputs y elementos interactivos)
 
-### Layout de Autenticación (`/`)
+### Elementos Visuales
+
+**Bordes y Sombras:**
+- Bordes principales: 2px para inputs, selects y elementos interactivos
+- Sombras sutiles: `shadow-sm`, `shadow-md`, `shadow-lg` para profundidad
+- Sombras de color: `shadow-[#4DA3FF]/10` y `ring-1 ring-[#4DA3FF]/10` para elementos destacados
+
+**Iconos SVG:**
+- Iconos informativos en headers y secciones
+- Iconos de acción en botones (buscar, limpiar, navegar)
+- Iconos de estado (loading, error, éxito)
+- Colores dinámicos que cambian según el contexto
+
+**Badges y Etiquetas:**
+- Badges con gradientes para contadores y estados
+- Badges de color por categoría de información:
+  - Azul (#4DA3FF): Categorías y elementos primarios
+  - Azul petróleo (#1F3A5F): Zonas y elementos secundarios
+  - Naranja (#F59E0B): Períodos y elementos temporales
+  - Verde (#10B981): Unidades y estados positivos
+
+**Efectos Interactivos:**
+- Hover: Transiciones suaves de color, escala y sombra
+- Focus: Rings de color azul claro (`ring-2 ring-[#4DA3FF]/30`)
+- Active: Estados de botones con gradientes animados
+- Disabled: Opacidad reducida y cursor not-allowed
+
+**Utilidades CSS (globals.css):**
+- `.bg-size-200` - Tamaño de fondo 200% para gradientes animados
+- `.bg-pos-0` / `.bg-pos-100` - Posiciones de gradiente para animaciones hover
+
+### Layout de Router Raíz (`/`)
+
+- **Router Inteligente**: Verifica autenticación y redirige automáticamente
+  - Si está autenticado: redirige a `/search`
+  - Si no está autenticado: redirige a `/login`
+- **Estado de Carga**: Muestra spinner mientras verifica la sesión
+
+### Layout de Autenticación (`/login`)
 
 - **2 Columnas (Desktop)**:
-  - Izquierda (50%): Panel informativo (`AuthIntro`) - contenido estático
-  - Derecha (50%): Formulario de autenticación (`AuthCard`) - contenido interactivo
+  - Izquierda (50%): Panel informativo (`AuthIntro`) - contenido estático con título destacado, cards con iconos y gradientes
+  - Derecha (50%): Formulario de autenticación (`AuthCard`) - contenido interactivo con tabs coloridos
   
 - **1 Columna (Mobile)**:
   - Formulario arriba
@@ -119,26 +170,62 @@ mi-proyecto/
 
 - **Full Screen**: Cubre toda la altura de la pantalla (min-h-screen / h-screen)
 
+**Elementos Visuales:**
+- Título principal en caja blanca con borde azul y sombra
+- Tabs Login/Register con gradiente azul cuando están activos
+- Inputs con bordes gruesos (2px) y efectos hover/focus en azul
+- Botón principal con gradiente animado y efecto scale en hover
+- Cards informativas con iconos de gradiente y efectos hover
+
 ### Layout de Búsqueda (`/search`)
 
 - **Sidebar Izquierdo (Persistente)**:
-  - Panel de filtros siempre visible (fondo gris claro #F3F4F6)
-  - Filtros: Zona, Categoría, Período
-  - Selects deshabilitados hasta que se seleccione un proyecto
-  - Botón "Limpiar filtros" como link secundario cuando hay filtros activos
+  - Panel de filtros siempre visible con título destacado y borde inferior
+  - Filtros: Zona, Categoría, Período con iconos SVG en labels
+  - Selects con bordes gruesos (2px) y efectos hover/focus azul claro
+  - Botón "Limpiar filtros" con gradiente azul y efecto hover
   - En mobile: se muestra arriba (stack vertical)
 
 - **Área Principal (Derecha)**:
-  - Selector de proyecto con autocomplete (arriba)
-  - Contenedor de resultados paginados (abajo)
-  - Mensajes de estado (sin proyecto, cargando, sin resultados)
+  - Header con gradiente sutil de fondo, título con gradiente de texto e icono
+  - Selector de proyecto con autocomplete (bordes 2px, hover azul, botón limpiar con color)
+  - Header de resultados con icono y badge de contador con gradiente
+  - Items de resultado con:
+    - Gradiente sutil de fondo
+    - Badges de color por categoría de información
+    - Botón "Ver detalles" con gradiente azul y efecto hover
+  - Paginación con contenedor con gradiente, botones con iconos y estado activo destacado
+  - Mensajes de estado (sin proyecto, cargando, sin resultados) con iconos y fondos con gradiente
 
 ### Layout de Detalles (`/records/[id]`)
 
-- **Header Sticky**: Botón "Volver", título "Detalles del Proyecto", botón "Editar"
-- **Contenido**: Grid responsive (2 columnas desktop / 1 móvil) organizado en secciones
-- **Imagen del Proyecto**: Al final de la página (si está disponible)
-- **Footer Sticky**: Botón "Guardar" centrado
+- **Header Sticky**:
+  - Fondo con gradiente sutil y backdrop blur
+  - Botón "Volver" con estilo azul claro y efecto hover
+  - Título "Detalles del Proyecto" con gradiente de texto
+  - Botón "Editar" con gradiente azul y efecto scale en hover
+
+- **Contenido**:
+  - Contenedor principal con gradiente sutil y sombra
+  - Grid responsive (2 columnas desktop / 1 móvil) organizado en secciones:
+    - **Información Básica**: Fondo azul claro sutil, icono de documento
+    - **Ubicación**: Fondo azul petróleo sutil, icono de ubicación
+    - **Desarrollador**: Fondo naranja sutil, icono de edificio
+    - **Fechas**: Fondo verde sutil, icono de calendario
+    - **Unidades**: Fondo verde sutil, icono de casa
+    - **Precios**: Fondo naranja sutil, icono de dinero
+    - **Información Adicional**: Fondo azul claro sutil, icono de información
+  - Cada sección tiene borde, sombra sutil y título con icono y borde inferior colorido
+  - Labels en semibold azul petróleo, valores con colores según importancia
+
+- **Imagen del Proyecto**:
+  - Contenedor con gradiente sutil y borde
+  - Header con icono de imagen y borde inferior azul
+  - Al final de la página (si está disponible)
+
+- **Footer Sticky**:
+  - Fondo con gradiente sutil y backdrop blur
+  - Botón "Guardar" centrado con gradiente animado y efectos hover
 
 ### Responsive Design
 
@@ -149,14 +236,22 @@ mi-proyecto/
 
 ## 📦 Módulo 0: Autenticación
 
-Este módulo maneja el inicio de sesión y registro de usuarios. La página de login está en la raíz (`/`) y es independiente del layout principal del sistema de búsqueda.
+Este módulo maneja el inicio de sesión y registro de usuarios. La estructura está organizada con un router inteligente en la raíz (`/`) que verifica la autenticación y redirige a la página de login (`/login`) o a la búsqueda (`/search`) según corresponda.
 
 ### 0.1. Estructura de Rutas de Autenticación
 
 ```
 Usuario visita http://localhost:3000/
     ↓
-Página de Login (app/page.tsx)
+Router Inteligente (app/page.tsx)
+    ↓
+Verifica localStorage.getItem("auth_session")
+    ↓
+¿Está autenticado?
+    ├─ Sí → Redirige a /search
+    └─ No → Redirige a /login
+        ↓
+Página de Login (app/login/page.tsx)
     ↓
 Layout de 2 columnas:
   - Izquierda: Panel informativo (AuthIntro)
@@ -164,11 +259,16 @@ Layout de 2 columnas:
     ↓
 Usuario hace click en "Ingresar" o "Registrarse"
     ↓
+useAuth.login() / useAuth.register()
+    ↓
+localStorage.setItem("auth_session", ...)
+    ↓
 Redirección automática a /search (página de búsqueda)
 ```
 
 **Componentes involucrados:**
-- `app/page.tsx` - Página principal de login (raíz)
+- `app/page.tsx` - Router inteligente (raíz `/`) - verifica autenticación y redirige
+- `app/login/page.tsx` - Página de login (`/login`) - formulario completo de autenticación
 - `AuthIntro` - Panel izquierdo con información del sistema
 - `AuthCard` - Contenedor del formulario de autenticación
 - `AuthTabs` - Tabs para alternar entre Login y Register
@@ -179,6 +279,7 @@ Redirección automática a /search (página de búsqueda)
 - `PrimaryButton` - Botón principal con estados de loading
 
 **Características:**
+- Router inteligente en la raíz que verifica autenticación automáticamente
 - Layout responsivo: 2 columnas en desktop, apilado en mobile
 - Formularios con validación básica
 - Estados de loading durante el proceso
@@ -194,14 +295,24 @@ Redirección automática a /search (página de búsqueda)
 ### 0.2. Flujo de Datos del Módulo 0
 
 ```
-LoginPage
-  ↓ (usa hook)
-useAuth.login()
-  ↓ (simulación)
+Usuario visita /
+    ↓
+RootPage (app/page.tsx)
+    ↓
+Verifica localStorage.getItem("auth_session")
+    ↓
+¿Existe sesión?
+    ├─ Sí → router.push("/search")
+    └─ No → router.push("/login")
+        ↓
+LoginPage (app/login/page.tsx)
+    ↓ (usa hook)
+useAuth.login() / useAuth.register()
+    ↓ (simulación)
 localStorage.setItem("auth_session", ...)
-  ↓ (redirección)
+    ↓ (redirección)
 router.push("/search")
-  ↓
+    ↓
 Página de Búsqueda
 ```
 
@@ -333,7 +444,7 @@ records.api.ts → useRecordsSearch → page.tsx → [Módulo 2]
 
 ## 📦 Módulo 2: Visualización de Resultados
 
-Este módulo maneja la visualización de resultados paginados, navegación entre páginas y visualización de detalles completos en un modal. Los resultados se muestran automáticamente después de que el Módulo 1 ejecuta la búsqueda.
+Este módulo maneja la visualización de resultados paginados, navegación entre páginas y visualización de detalles completos en una página dedicada de detalles/edición (`/records/[id]`). Los resultados se muestran automáticamente después de que el Módulo 1 ejecuta la búsqueda.
 
 ### 2.1. Visualización de Resultados Paginados
 
@@ -481,15 +592,15 @@ RecordDetailsContent + Imagen
 - **Zona**: Zona del registro (solo si existe)
 - **Período**: Período del registro
 - **Total Unidades**: Total de unidades (muestra 0 si es null o undefined)
-- **Botón "Ver detalles"**: Abre modal con información completa
+- **Botón "Ver detalles"**: Navega a `/records/[id]` con información completa y modo de edición
 
-**El `DetailsModal` muestra:**
+**La página `/records/[id]` muestra (solo campos necesarios):**
 - **Información Básica**: Proyecto, Fase, Torre, Período, Categoría, Estado
-- **Ubicación**: País, Departamento, Municipio, Zona
+- **Ubicación**: País, Departamento, Municipio, Zona, Latitud, Longitud
 - **Desarrollador**: Nombre del desarrollador
-- **Fechas**: Fecha Inicio, Fecha Entrega (formateadas)
-- **Unidades**: Total Unidades, Unidades Disponibles (muestra 0 si es null)
-- **Precios**: Precio Promedio, Cuota Promedio, Ingresos Promedio
+- **Fechas**: Fecha Inicio, Fecha Entrega (como strings `YYYY-MM-DD`)
+- **Unidades**: Total Unidades (solo lectura), Unidades Disponibles (editable)
+- **Precios**: Precio Promedio, Cuota Promedio, Ingresos Promedio (editables)
 - **Información Adicional**: Tipo de Seguridad, Cantidad Accesos, URL Imagen (link clickeable)
 
 ---

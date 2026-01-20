@@ -1,64 +1,60 @@
 "use client";
 
-import { useState } from "react";
-import { AuthIntro } from "./login/components/AuthIntro";
-import { AuthCard } from "./login/components/AuthCard";
-import { AuthTabs } from "./login/components/AuthTabs";
-import { LoginForm } from "./login/components/LoginForm";
-import { RegisterForm } from "./login/components/RegisterForm";
-import { useAuth } from "@/src/hooks/useAuth";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
-type AuthMode = "login" | "register";
+/**
+ * Router inteligente en la raíz (/)
+ * 
+ * Verifica si el usuario está autenticado:
+ * - Si está autenticado: redirige a /search
+ * - Si no está autenticado: redirige a /login
+ */
+export default function RootPage() {
+  const router = useRouter();
 
-export default function LoginPage() {
-  const [mode, setMode] = useState<AuthMode>("login");
-  const { login, register, loading, error } = useAuth();
+  useEffect(() => {
+    // Verificar si hay sesión en localStorage
+    const authSession = typeof window !== "undefined" 
+      ? localStorage.getItem("auth_session") 
+      : null;
 
-  const handleLogin = async (username: string, password: string) => {
-    await login({ username, password });
-  };
+    if (authSession) {
+      // Usuario autenticado: redirigir a búsqueda
+      router.push("/search");
+    } else {
+      // Usuario no autenticado: redirigir a login
+      router.push("/login");
+    }
+  }, [router]);
 
-  const handleRegister = async (username: string, email: string, password: string) => {
-    await register({ username, email, password });
-  };
-
+  // Mostrar un estado de carga mientras se verifica la autenticación
   return (
-    <div className="flex min-h-screen flex-col bg-white lg:h-screen lg:flex-row lg:overflow-hidden">
-      {/* Panel izquierdo - Contenido informativo */}
-      <div className="hidden min-h-screen w-full bg-white lg:flex lg:h-screen lg:w-1/2">
-        <AuthIntro />
-      </div>
-
-      {/* Panel derecho - Formulario de autenticación */}
-      <div className="flex min-h-screen w-full lg:h-screen lg:w-1/2">
-        <AuthCard>
-          <div className="mb-6 rounded-lg bg-gradient-to-r from-[#4DA3FF]/10 via-[#1F3A5F]/5 to-[#4DA3FF]/10 p-4 border-2 border-[#4DA3FF]/20">
-            <h2 className="text-2xl font-semibold bg-gradient-to-r from-[#1F3A5F] to-[#4DA3FF] bg-clip-text text-transparent">
-              {mode === "login" ? "Iniciar Sesión" : "Crear Cuenta"}
-            </h2>
-            <p className="mt-2 text-sm text-[#6B7280] flex items-center gap-2">
-              <svg className="h-4 w-4 text-[#4DA3FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              {mode === "login"
-                ? "Ingresa tus credenciales para acceder al sistema"
-                : "Completa el formulario para crear tu cuenta"}
-            </p>
-          </div>
-
-          <AuthTabs mode={mode} onModeChange={setMode} />
-
-          {mode === "login" ? (
-            <LoginForm onSubmit={handleLogin} loading={loading} error={error} />
-          ) : (
-            <RegisterForm onSubmit={handleRegister} loading={loading} error={error} />
-          )}
-        </AuthCard>
-
-        {/* Panel informativo en mobile (debajo del formulario) */}
-        <div className="mt-8 block px-4 lg:hidden">
-          <AuthIntro />
+    <div className="flex min-h-screen items-center justify-center bg-white">
+      <div className="text-center">
+        <div className="mb-4 inline-block">
+          <svg
+            className="h-12 w-12 animate-spin text-[#4DA3FF]"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            />
+          </svg>
         </div>
+        <p className="text-lg font-medium text-[#1F3A5F]">Cargando...</p>
       </div>
     </div>
   );

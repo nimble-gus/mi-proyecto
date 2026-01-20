@@ -73,3 +73,34 @@ export async function getRecordDetails(id: number): Promise<DetailsResponse> {
 
   return response.json();
 }
+
+export interface UpdateRecordParams {
+  fase?: string | null;
+  estado?: string | null;
+  fecha_inicio?: string | null;
+  fecha_entrega?: string | null;
+  precio_promedio?: string | null;
+  cuota_promedio?: string | null;
+  ingresos_promedio?: string | null;
+  unidades_disponibles?: number | null;
+}
+
+export async function updateRecordDetails(
+  id: number,
+  data: UpdateRecordParams
+): Promise<DetailsResponse> {
+  const response = await fetch(`/api/records/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ error: "Error desconocido" }));
+    throw new Error(errorData.error || "Error al actualizar el registro");
+  }
+
+  return response.json();
+}

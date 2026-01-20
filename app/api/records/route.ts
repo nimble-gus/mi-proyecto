@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
         categoria: true,
         zona: true,
         periodo: true, // Período del registro
-        total_unidades: true, // Total de unidades del proyecto
+        // total_unidades ya no se obtiene de housing_universe, se calcula desde housing_units
         // Agregar más campos según necesidad futura
       },
       skip: skip, // Siempre incluir skip, incluso si es 0
@@ -113,9 +113,38 @@ export async function GET(request: NextRequest) {
       ],
     });
 
-    // 6️⃣ Respuesta estándar con metadata de paginación
+    // 6️⃣ Calcular total_unidades y unidades_disponibles desde housing_units para cada registro
+    // Contar unidades donde proyecto y periodo coincidan con el registro de housing_universe
+    const recordsWithCounts = await Promise.all(
+      records.map(async (record) => {
+        // Contar total de unidades
+        const totalUnidades = await prisma.housing_units.count({
+          where: {
+            proyecto: record.proyecto,
+            periodo: record.periodo,
+          },
+        });
+
+        // Contar unidades disponibles (donde disponibilidad = "Disponible")
+        const unidadesDisponibles = await prisma.housing_units.count({
+          where: {
+            proyecto: record.proyecto,
+            periodo: record.periodo,
+            disponibilidad: "Disponible",
+          },
+        });
+
+        return {
+          ...record,
+          total_unidades: totalUnidades || 0,
+          unidades_disponibles: unidadesDisponibles || 0,
+        };
+      })
+    );
+
+    // 7️⃣ Respuesta estándar con metadata de paginación
     return NextResponse.json({
-      items: records,
+      items: recordsWithCounts,
       page,
       pageSize: finalPageSize,
       totalItems,

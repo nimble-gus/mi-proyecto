@@ -31,8 +31,12 @@ export function ResultItem({ project }: ResultItemProps) {
               <span className="text-[#F59E0B] font-medium">{project.periodo}</span>
             </div>
             <div className="flex items-center gap-1.5 rounded-md bg-[#10B981]/10 px-2.5 py-1">
-              <span className="font-medium text-[#1F3A5F]">Unidades:</span>
+              <span className="font-medium text-[#1F3A5F]">Total Unidades:</span>
               <span className="text-[#10B981] font-semibold">{project.total_unidades ?? 0}</span>
+            </div>
+            <div className="flex items-center gap-1.5 rounded-md bg-[#EF4444]/10 px-2.5 py-1">
+              <span className="font-medium text-[#1F3A5F]">Disponibles:</span>
+              <span className="text-[#EF4444] font-semibold">{project.unidades_disponibles ?? 0}</span>
             </div>
           </div>
         </div>

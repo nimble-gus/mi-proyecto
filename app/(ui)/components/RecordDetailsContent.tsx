@@ -7,12 +7,16 @@ interface RecordDetailsContentProps {
   details: RecordDetails | null;
   loadingDetails: boolean;
   errorDetails: string | null;
+  isEditing?: boolean;
+  onFieldChange?: (field: keyof RecordDetails, value: any) => void;
 }
 
 export function RecordDetailsContent({
   details,
   loadingDetails,
   errorDetails,
+  isEditing = false,
+  onFieldChange,
 }: RecordDetailsContentProps) {
   // Estado de carga
   if (loadingDetails) {
@@ -59,7 +63,16 @@ export function RecordDetailsContent({
           </div>
           <div>
             <span className="text-sm font-semibold text-[#1F3A5F]">Fase:</span>
-            <p className="mt-1 text-[#111827] font-medium">{formatValue(details.fase)}</p>
+            {isEditing ? (
+              <input
+                type="text"
+                value={details.fase || ""}
+                onChange={(e) => onFieldChange?.("fase", e.target.value || null)}
+                className="mt-1 w-full rounded-lg border-2 border-[#E5E7EB] bg-white px-3 py-2 text-base text-[#111827] focus:border-[#4DA3FF] focus:outline-none focus:ring-2 focus:ring-[#4DA3FF]/30"
+              />
+            ) : (
+              <p className="mt-1 text-[#111827] font-medium">{formatValue(details.fase)}</p>
+            )}
           </div>
           <div>
             <span className="text-sm font-semibold text-[#1F3A5F]">Torre:</span>
@@ -75,7 +88,16 @@ export function RecordDetailsContent({
           </div>
           <div>
             <span className="text-sm font-semibold text-[#1F3A5F]">Estado:</span>
-            <p className="mt-1 text-[#10B981] font-semibold">{formatValue(details.estado)}</p>
+            {isEditing ? (
+              <input
+                type="text"
+                value={details.estado || ""}
+                onChange={(e) => onFieldChange?.("estado", e.target.value || null)}
+                className="mt-1 w-full rounded-lg border-2 border-[#E5E7EB] bg-white px-3 py-2 text-base text-[#111827] focus:border-[#4DA3FF] focus:outline-none focus:ring-2 focus:ring-[#4DA3FF]/30"
+              />
+            ) : (
+              <p className="mt-1 text-[#10B981] font-semibold">{formatValue(details.estado)}</p>
+            )}
           </div>
         </div>
       </div>
@@ -142,11 +164,29 @@ export function RecordDetailsContent({
         <div className="grid grid-cols-1 gap-3">
           <div>
             <span className="text-sm font-medium text-[#6B7280]">Fecha Inicio:</span>
-            <p className="text-[#111827]">{formatDate(details.fecha_inicio)}</p>
+            {isEditing ? (
+              <input
+                type="date"
+                value={details.fecha_inicio ? details.fecha_inicio.slice(0, 10) : ""}
+                onChange={(e) => onFieldChange?.("fecha_inicio", e.target.value || null)}
+                className="mt-1 w-full rounded-lg border-2 border-[#E5E7EB] bg-white px-3 py-2 text-base text-[#111827] focus:border-[#4DA3FF] focus:outline-none focus:ring-2 focus:ring-[#4DA3FF]/30"
+              />
+            ) : (
+              <p className="text-[#111827]">{formatDate(details.fecha_inicio)}</p>
+            )}
           </div>
           <div>
             <span className="text-sm font-medium text-[#6B7280]">Fecha Entrega:</span>
-            <p className="text-[#111827]">{formatDate(details.fecha_entrega)}</p>
+            {isEditing ? (
+              <input
+                type="date"
+                value={details.fecha_entrega ? details.fecha_entrega.slice(0, 10) : ""}
+                onChange={(e) => onFieldChange?.("fecha_entrega", e.target.value || null)}
+                className="mt-1 w-full rounded-lg border-2 border-[#E5E7EB] bg-white px-3 py-2 text-base text-[#111827] focus:border-[#4DA3FF] focus:outline-none focus:ring-2 focus:ring-[#4DA3FF]/30"
+              />
+            ) : (
+              <p className="text-[#111827]">{formatDate(details.fecha_entrega)}</p>
+            )}
           </div>
         </div>
       </div>
@@ -166,7 +206,17 @@ export function RecordDetailsContent({
           </div>
           <div>
             <span className="text-sm font-medium text-[#6B7280]">Unidades Disponibles:</span>
-            <p className="text-[#111827]">{formatValue(details.unidades_disponibles ?? 0)}</p>
+            {isEditing ? (
+              <input
+                type="number"
+                value={details.unidades_disponibles ?? ""}
+                onChange={(e) => onFieldChange?.("unidades_disponibles", e.target.value ? parseInt(e.target.value, 10) : null)}
+                min="0"
+                className="mt-1 w-full rounded-lg border-2 border-[#E5E7EB] bg-white px-3 py-2 text-base text-[#111827] focus:border-[#4DA3FF] focus:outline-none focus:ring-2 focus:ring-[#4DA3FF]/30"
+              />
+            ) : (
+              <p className="text-[#111827]">{formatValue(details.unidades_disponibles ?? 0)}</p>
+            )}
           </div>
         </div>
       </div>
@@ -182,15 +232,45 @@ export function RecordDetailsContent({
         <div className="grid grid-cols-1 gap-3">
           <div>
             <span className="text-sm font-medium text-[#6B7280]">Precio Promedio:</span>
-            <p className="text-[#111827]">{formatValue(details.precio_promedio)}</p>
+            {isEditing ? (
+              <input
+                type="number"
+                step="0.01"
+                value={details.precio_promedio || ""}
+                onChange={(e) => onFieldChange?.("precio_promedio", e.target.value || null)}
+                className="mt-1 w-full rounded-lg border-2 border-[#E5E7EB] bg-white px-3 py-2 text-base text-[#111827] focus:border-[#4DA3FF] focus:outline-none focus:ring-2 focus:ring-[#4DA3FF]/30"
+              />
+            ) : (
+              <p className="text-[#111827]">{formatValue(details.precio_promedio)}</p>
+            )}
           </div>
           <div>
             <span className="text-sm font-medium text-[#6B7280]">Cuota Promedio:</span>
-            <p className="text-[#111827]">{formatValue(details.cuota_promedio)}</p>
+            {isEditing ? (
+              <input
+                type="number"
+                step="0.01"
+                value={details.cuota_promedio || ""}
+                onChange={(e) => onFieldChange?.("cuota_promedio", e.target.value || null)}
+                className="mt-1 w-full rounded-lg border-2 border-[#E5E7EB] bg-white px-3 py-2 text-base text-[#111827] focus:border-[#4DA3FF] focus:outline-none focus:ring-2 focus:ring-[#4DA3FF]/30"
+              />
+            ) : (
+              <p className="text-[#111827]">{formatValue(details.cuota_promedio)}</p>
+            )}
           </div>
           <div>
             <span className="text-sm font-medium text-[#6B7280]">Ingresos Promedio:</span>
-            <p className="text-[#111827]">{formatValue(details.ingresos_promedio)}</p>
+            {isEditing ? (
+              <input
+                type="number"
+                step="0.01"
+                value={details.ingresos_promedio || ""}
+                onChange={(e) => onFieldChange?.("ingresos_promedio", e.target.value || null)}
+                className="mt-1 w-full rounded-lg border-2 border-[#E5E7EB] bg-white px-3 py-2 text-base text-[#111827] focus:border-[#4DA3FF] focus:outline-none focus:ring-2 focus:ring-[#4DA3FF]/30"
+              />
+            ) : (
+              <p className="text-[#111827]">{formatValue(details.ingresos_promedio)}</p>
+            )}
           </div>
         </div>
       </div>

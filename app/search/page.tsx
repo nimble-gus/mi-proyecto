@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Project, SelectedProject } from "@/src/types/domain";
 import { useProjectAutocomplete } from "@/src/hooks/useProjectAutocomplete";
 import { useCatalogs } from "@/src/hooks/useCatalogs";
@@ -8,6 +8,15 @@ import { useRecordsSearch } from "@/src/hooks/useRecordsSearch";
 import { ProjectAutocomplete } from "../(ui)/components/ProjectAutocomplete";
 import { FiltersBar } from "../(ui)/components/FiltersBar";
 import { ResultsList } from "../(ui)/components/ResultsList";
+
+const SEARCH_STATE_KEY = "search_state";
+
+interface PersistedSearchState {
+  selectedProject: SelectedProject | null;
+  selectedZone: string;
+  selectedCategory: string;
+  selectedPeriod: string;
+}
 
 export default function SearchPage() {
   // Estado del proyecto seleccionado
@@ -18,6 +27,27 @@ export default function SearchPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedPeriod, setSelectedPeriod] = useState<string>("");
 
+  // Cargar estado persistido al montar
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    try {
+      const stored = window.localStorage.getItem(SEARCH_STATE_KEY);
+      if (!stored) return;
+
+      const parsed: PersistedSearchState = JSON.parse(stored);
+      if (parsed && parsed.selectedProject) {
+        setSelectedProject(parsed.selectedProject);
+        setSelectedZone(parsed.selectedZone || "");
+        setSelectedCategory(parsed.selectedCategory || "");
+        setSelectedPeriod(parsed.selectedPeriod || "");
+      }
+    } catch {
+      // Si falla el parseo, limpiamos la clave para evitar errores futuros
+      window.localStorage.removeItem(SEARCH_STATE_KEY);
+    }
+  }, []);
+
   // Hook de autocomplete
   const autocomplete = useProjectAutocomplete();
 
@@ -26,6 +56,29 @@ export default function SearchPage() {
 
   // Hook de búsqueda de resultados (búsqueda automática)
   const recordsSearch = useRecordsSearch(selectedProject, selectedZone, selectedCategory, selectedPeriod);
+
+  // Persistir estado de búsqueda cuando cambie
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    if (!selectedProject) {
+      window.localStorage.removeItem(SEARCH_STATE_KEY);
+      return;
+    }
+
+    const stateToPersist: PersistedSearchState = {
+      selectedProject,
+      selectedZone,
+      selectedCategory,
+      selectedPeriod,
+    };
+
+    try {
+      window.localStorage.setItem(SEARCH_STATE_KEY, JSON.stringify(stateToPersist));
+    } catch {
+      // Ignorar errores de almacenamiento (ej. storage lleno)
+    }
+  }, [selectedProject, selectedZone, selectedCategory, selectedPeriod]);
 
   // Handlers
   const handleSelectProject = useCallback((project: Project) => {

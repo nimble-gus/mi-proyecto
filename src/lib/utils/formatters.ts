@@ -15,14 +15,8 @@ export const formatValue = (value: any): string => {
 
 export const formatDate = (dateString: string | null): string => {
   if (!dateString) return "N/A";
-  try {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("es-ES", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  } catch {
-    return dateString;
+  if (dateString.length >= 10) {
+    return dateString.slice(0, 10); // "YYYY-MM-DD"
   }
+  return dateString;
 };
